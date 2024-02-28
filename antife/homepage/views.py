@@ -8,3 +8,9 @@ def home(request):
 def todos(request):
     items = TodoItem.objects.all()
     return render(request, "todos.html",  {"todos": items })
+
+def login(request):
+    return render(request, 'login.html')
+
+def register(request):
+    return render(request, 'register.html')
