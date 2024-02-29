@@ -14,3 +14,8 @@ def login(request):
 
 def register(request):
     return render(request, 'register.html')
+<<<<<<< Updated upstream
+=======
+
+
+>>>>>>> Stashed changes
