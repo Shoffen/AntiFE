@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+  Product List - Django App
+{% endblock %}
+
+
+  <link rel="stylesheet" type="text/css" href="{% static 'styles/styles.css' %}">
+
+{% block content %}
+  <div class="container">
+    <h1 class="blue-text">Product List</h1>
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Calories</th>
+          <th>Total Fat</th>
+          <th>Fiber</th>
+          <th>Protein</th>
+          <th>Phenylalanine</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for product in products %}
+          <tr>
+            <td>{{ product.name }}</td>
+            <td>{{ product.calories }}</td>
+            <td>{{ product.total_fat }}</td>
+            <td>{{ product.fiber }}</td>
+            <td>{{ product.protein }}</td>
+            <td>{{ product.phenylalanine }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}
