@@ -23,15 +23,19 @@
 <body>
   
   <div class="wrapper">
-    <form action="">
+    <form action="" method="post">
+        {% csrf_token %}
         <h1> Login </h1>
+        {% if message %}
+        <p>{{ message }}</p>
+        {% endif %}
         <div class="input-box">
-          <input type="text" placeholder="Username" required>
+          <input type="text" name="surname" placeholder="Surname" required>
           <i class='bx bxs-user'></i>
         </div>
 
         <div class="input-box">
-          <input type="password" placeholder="Password" required>
+          <input type="password" name="password" placeholder="Password" required>
           <i class='bx bxs-lock-alt'></i>
         </div>
         <div class="remember-forgot">
