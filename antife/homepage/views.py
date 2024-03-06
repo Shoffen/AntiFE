@@ -1,5 +1,5 @@
 from django.shortcuts import render, HttpResponse
-from .models import TodoItem, Product
+from .models import TodoItem, Product, Receptai
 
 
 def home(request):
@@ -18,3 +18,7 @@ def login(request):
 
 def register(request):
     return render(request, 'register.html')
+
+def receptai_list(request):
+    receptai_list = Receptai.objects.all()
+    return render(request, 'Receptai.html', {'receptai_list': receptai_list})

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container">
+        <h2>Receptai</h2>
+
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Pavadinimas</th>
+                    <th>Kalorijos</th>
+                    <th>Fenilalaninas</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for receptas in receptai_list %}
+                    <tr>
+                        <td class="name-cell" data-toggle="aprasas-{{ forloop.counter }}">{{ receptas.pavadinimas }}</td>
+                        <td>{{ receptas.kalorijos }}</td>
+                        <td>{{ receptas.fenilalaninas }}</td>
+                    </tr>
+                    <tr>
+                        <td id="aprasas-header-{{ forloop.counter }}" style="display: none;"></td>
+                        <td id="aprasas-{{ forloop.counter }}" style="display: none; padding: 10px; background-color: #f2f2f2; border: 1px solid #ddd;" colspan="3">
+                            <h3>Aprasas</h3>
+                            {{ receptas.aprasas }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const nameCells = document.querySelectorAll('.name-cell');
+
+            nameCells.forEach(cell => {
+                cell.addEventListener('click', function () {
+                    const targetId = this.getAttribute('data-toggle');
+                    const targetHeaderId = `${targetId}-header`;
+                    const targetElement = document.getElementById(targetId);
+                    const targetHeaderElement = document.getElementById(targetHeaderId);
+
+                    if (targetElement.style.display === 'none') {
+                        targetElement.style.display = '';
+                        targetHeaderElement.style.display = '';
+                    } else {
+                        targetElement.style.display = 'none';
+                        targetHeaderElement.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .styled-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 16px;
+            text-align: left;
+        }
+
+        .styled-table th,
+        .styled-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+        }
+
+        .styled-table th {
+            background-color: #3498db;
+            color: #fff;
+        }
+
+        .styled-table tbody tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .name-cell {
+            color: #3498db;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+    </style>
+{% endblock %}

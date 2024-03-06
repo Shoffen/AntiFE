@@ -39,19 +39,21 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav mr-auto">
         <li class="nav-item active">
-          <a class="nav-link" href="#">Home</a>
+          <a class="nav-link" href="{% url 'home' %}">Home</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">About</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Contact</a>
+        <!-- Mityba dropdown menu with Produktai and Receptai options -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="mitybaDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Mityba
+          </a>
+          <div class="dropdown-menu" aria-labelledby="mitybaDropdown">
+            <a class="dropdown-item" href="/product">Produktai</a>
+            <a class="dropdown-item" href="/receptai">Receptai</a>
+          </div>
         </li>
       </ul>
       <button type="button" class="btn btn-primary custom-button" onclick="openLogin()">Login</button>
       <button type="button" class="btn btn-primary custom-button" onclick="openRegister()">Register</button>
-
-
     </div>
   </nav>
   <div class="container">{% block content %} {% endblock %}</div>
@@ -68,6 +70,5 @@
       window.open("register", "_self");
     }
   </script>
-  
 </body>
 </html>
