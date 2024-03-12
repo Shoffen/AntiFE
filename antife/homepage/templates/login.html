@@ -26,11 +26,15 @@
     <form action="" method="post">
         {% csrf_token %}
         <h1> Login </h1>
-        {% if message %}
-        <p>{{ message }}</p>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-danger" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
         {% endif %}
         <div class="input-box">
-          <input type="text" name="surname" placeholder="Surname" required>
+          <input type="text" name="username" placeholder="Username" required>
           <i class='bx bxs-user'></i>
         </div>
 
@@ -44,17 +48,11 @@
         </div>
         <button type="submit" class="btn btn-primary custom-button"> Login </button>
         <div class="register-link">
-          <p> Don't have an account? <a href="#" onclick="openRegister()"> Register! </a></p>
+          <p> Don't have an account?<a href="/register"> Register!</a></p>
         </div>
     </form>
   </div>
-  <script>
-    function openRegister() {
-      
-      window.open("/register", "_self");
-      
-    }
-  </script>
+  
   
 </body>
 </html>
