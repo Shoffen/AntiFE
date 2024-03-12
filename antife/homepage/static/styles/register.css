@@ -62,11 +62,20 @@
       font-size: 20px;
     }
 
-    .wrapper .remember-forgot{
-      display: flex;
-      justify-content: space-between;
+    .wrapper .register-link{
       font-size: 14.5px;
-      margin: -15px 0 15px;
+      text-align: center;
+      margin: 20px 0 15px;
+
+    }
+    .login-link p a {
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    
+    .login-link p a:hover{
+      text-decoration: underline;
     }
     .remember-forgot label input{
       accent-color: #fff;
@@ -118,10 +127,8 @@
       cursor: pointer;
     }
     
-    /* Hover effect */
-  button.custom-button:hover {
-    background-color: rgba(78, 82, 87, 0.5); /* Slightly gray with transparency */
-  }
+
+
 
     
     
