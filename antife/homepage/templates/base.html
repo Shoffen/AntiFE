@@ -40,14 +40,17 @@
 {% endif %}
 
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="#">My Django App</a>
+    <a class="navbar-brand" href="{% url 'home' %}">ANTIFE</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav mr-auto">
         <li class="nav-item active">
-          <a class="nav-link" href="{% url 'home' %}">Home</a>
+          <a class="nav-link" href="{% url 'home' %}">Forumas</a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="{% url 'home' %}">Kraujo tyrimai</a>
         </li>
         <!-- Mityba dropdown menu with Produktai and Receptai options -->
         <li class="nav-item dropdown">
@@ -55,13 +58,22 @@
             Mityba
           </a>
           <div class="dropdown-menu" aria-labelledby="mitybaDropdown">
-            <a class="dropdown-item" href="/product">Produktai</a>
-            <a class="dropdown-item" href="/receptai">Receptai</a>
+            <a class="dropdown-item" href="{% url 'product' %}">Produktai</a>
+            <a class="dropdown-item" href="{% url 'receptai_list' %}">Receptai</a>
+            <a class="dropdown-item" href="{% url 'create_recipe' %}">Sukurti recepta (pridesim i recepta veliau)</a>
+            <a class="dropdown-item" href="/receptai">Valgiaraštis</a>
           </div>
         </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="{% url 'home' %}">Profilis</a>
+        </li>
       </ul>
-      <button type="button" class="btn btn-primary custom-button" onclick="openLogin()">Login</button>
-      <button type="button" class="btn btn-primary custom-button" onclick="openRegister()">Register</button>
+      {% if user.is_authenticated %}
+        <button type="button" class="btn btn-primary custom-button" onclick="Loguot()">Atsijungti</button>
+      {% else %}
+        <button type="button" class="btn btn-primary custom-button" onclick="openLogin()">Prisijungti</button>
+        <button type="button" class="btn btn-primary custom-button" onclick="openRegister()">Registruotis</button>
+      {% endif %}
     </div>
   </nav>
   <div class="container">{% block content %} {% endblock %}</div>
@@ -70,12 +82,17 @@
   <script>
     function openLogin() {
       // Redirect to the login page
-      window.open("login", "_self");
+      window.open("{% url 'login' %}", "_self");
     }
   
     function openRegister() {
       // Redirect to the register page
-      window.open("register", "_self");
+      window.open("{% url 'register' %}", "_self");
+    }
+
+    function Loguot() {
+      // Atjungiam nuo sesijos ir perkraunam
+      window.open("{% url 'logout' %}", "_self");
     }
   </script>
 </body>
