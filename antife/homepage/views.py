@@ -61,7 +61,7 @@ def register(request):
             )
             new_user.save()
             messages.success(request, 'Registration successful. Now you can login!')
-            return redirect('/')  # Change 'home' to the name of your homepage URL pattern
+            return redirect('/login')  # Change 'home' to the name of your homepage URL pattern
     
     return render(request, 'register.html')
 
@@ -70,7 +70,7 @@ def register(request):
 
 
 
-
+from django.contrib.sessions.models import Session
 from django.contrib import messages
 
 def login(request):
@@ -88,7 +88,10 @@ def login(request):
 
     return render(request, 'login.html')
 
+from django.contrib.auth import logout  # Import the logout function
 
-
+def logout_view(request):
+    logout(request)
+    return redirect('/')  # Redirect to the homepage or any other desired URL
 
 
