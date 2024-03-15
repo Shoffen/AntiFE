@@ -60,23 +60,20 @@
           </div>
         </li>
       </ul>
-      <button type="button" class="btn btn-primary custom-button" onclick="openLogin()">Prisijungti</button>
-      <button type="button" class="btn btn-primary custom-button" onclick="openRegister()">Registruotis</button>
+      <button type="button" class="btn btn-primary custom-button" onclick="logoff()">Atsijungti</button>
     </div>
   </nav>
   <div class="container">{% block content %} {% endblock %}</div>
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
   <script>
-    function openLogin() {
-      // Redirect to the login page
-      window.open("login", "_self");
+    function logoff() {
+        // Redirect to the login page
+        window.location.href = '/';
     }
+</script>
   
-    function openRegister() {
-      // Redirect to the register page
-      window.open("register", "_self");
-    }
+  
   </script>
 </body>
 </html>

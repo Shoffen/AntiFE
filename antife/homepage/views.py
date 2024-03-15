@@ -17,7 +17,8 @@ def product(request):
 def receptai_list(request):
     receptai_list = Receptai.objects.all()
     return render(request, 'Receptai.html', {'receptai_list': receptai_list})
-
+def logged(request):
+    return render(request, "baseLogged.html")
 
 from django.shortcuts import render, redirect
 from .models import Naudotojai
@@ -43,10 +44,10 @@ def register(request):
         
         # Validate email format using regular expression
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-            messages.error(request, 'Invalid email format. Please enter a valid email address.')
+            messages.error(request, 'Neteisingas elektronio pašto formatas')
         elif Naudotojai.objects.filter(el_pastas=email).exists():
             # Set the message if the email already exists
-            messages.error(request, 'Email is already registered.')
+            messages.error(request, 'Šis paštas jau naudojamas')
         else:
             # Save the data to the database
             new_user = Naudotojai(
@@ -60,7 +61,7 @@ def register(request):
                 level=0  # Set default level or adjust as needed
             )
             new_user.save()
-            messages.success(request, 'Registration successful. Now you can login!')
+            messages.success(request, 'Registracija sėkminga! Galite prisijungti')
             return redirect('/')  # Change 'home' to the name of your homepage URL pattern
     
     return render(request, 'register.html')
@@ -80,11 +81,11 @@ def login(request):
         user = Naudotojai.objects.filter(usename=username, password=password).first()
         if user is not None:
             # Authentication successful
-            messages.success(request, f"Login successful. Welcome, {username}")
-            return redirect('/')  # Redirect to another URL with success message
+            messages.success(request, f"Sėkmingai prisijungėte. Sveiki, {username}")
+            return render(request, 'baseLogged.html')  # Redirect to another URL with success message
         else:
             # Authentication failed
-            messages.error(request, "Invalid username or password. Please try again.")
+            messages.error(request, "Neteisingi prisijungimo duomenys. Bandykite dar kart.")
 
     return render(request, 'login.html')
 
