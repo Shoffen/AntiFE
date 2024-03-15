@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container">
+        <h2>Create a Recipe</h2>
+
+        <form id="recipeForm">
+            {% csrf_token %}  <!-- Add this line to include CSRF token -->
+
+            <div class="form-group">
+                <label for="recipeName">Recipe Name:</label>
+                <input type="text" id="recipeName" name="recipeName" class="form-control" required>
+            </div>
+
+            <div id="ingredientList">
+                <div class="ingredient">
+                    <label for="ingredient1">Ingredient:</label>
+                    <select id="ingredient1" name="ingredient[]" class="form-control" required>
+                        <option value="" selected disabled>Select Ingredient</option>
+                        {% for product in products %}
+                            <option value="{{ product.name }}">{{ product.name }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <label for="amount1">Amount (grams):</label>
+                    <input type="number" id="amount1" name="amount[]" class="form-control" required>
+                </div>
+            </div>
+
+            <button type="button" id="addIngredient" class="btn btn-primary">Add Ingredient</button>
+
+            <div class="form-group">
+                <label for="recipeSummary">Recipe Summary:</label>
+                <textarea id="recipeSummary" name="recipeSummary" class="form-control" rows="4"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-success">Create Recipe</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('addIngredient').addEventListener('click', function () {
+                const ingredientList = document.getElementById('ingredientList');
+                const ingredientCount = ingredientList.querySelectorAll('.ingredient').length + 1;
+                const newIngredient = document.createElement('div');
+                newIngredient.classList.add('ingredient');
+
+                newIngredient.innerHTML = `
+                    <label for="ingredient${ingredientCount}">Ingredient:</label>
+                    <select id="ingredient${ingredientCount}" name="ingredient[]" class="form-control" required>
+                        <option value="" selected disabled>Select Ingredient</option>
+                        {% for product in products %}
+                            <option value="{{ product.name }}">{{ product.name }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <label for="amount${ingredientCount}">Amount (grams):</label>
+                    <input type="number" id="amount${ingredientCount}" name="amount[]" class="form-control" required>
+                `;
+                ingredientList.appendChild(newIngredient);
+            });
+
+            document.getElementById('recipeForm').addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                // Serialize form data
+                const formData = new FormData(this);
+
+                // Send AJAX request to server
+                fetch('/create-recipe/', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Server response:', data);
+                    // Handle response if needed (e.g., display a success message)
+                })
+                .catch(error => console.error('Error creating recipe:', error));
+            });
+        });
+    </script>
+{% endblock %}
+
+
+

@@ -27,9 +27,9 @@ class Naudotojai(models.Model):
     level = models.IntegerField()
 
 class Receptai(models.Model):
-    kalorijos = models.FloatField()
+    kalorijos = models.FloatField(default=0.0)
     pavadinimas = models.CharField(max_length=255)
-    fenilalaninas = models.FloatField()
+    fenilalaninas = models.FloatField(default=0.0)
     aprasas = models.CharField(max_length=255)
 
 class Forumai(models.Model):
