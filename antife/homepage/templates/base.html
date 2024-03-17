@@ -68,12 +68,12 @@
           <a class="nav-link" href="{% url 'home' %}">Profilis</a>
         </li>
       </ul>
-
-      <button type="button" class="btn btn-primary custom-button" onclick="openLogin()">Prisijungti</button>
-      <button type="button" class="btn btn-primary custom-button" onclick="openRegister()">Registruotis</button>
-
-      
-
+      {% if user.is_authenticated %}
+        <button type="button" class="btn btn-primary custom-button" onclick="Loguot()">Atsijungti</button>
+      {% else %}
+        <button type="button" class="btn btn-primary custom-button" onclick="openLogin()">Prisijungti</button>
+        <button type="button" class="btn btn-primary custom-button" onclick="openRegister()">Registruotis</button>
+      {% endif %}
     </div>
   </nav>
   <div class="container">{% block content %} {% endblock %}</div>
