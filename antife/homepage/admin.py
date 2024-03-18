@@ -1,9 +1,7 @@
 from django.contrib import admin
-from .models import TodoItem
 from import_export.admin import ImportExportActionModelAdmin
 from .models import Naudotojai, Product, Receptai, Forumai, Irasai, Kraujo_tyrimai, Recepto_produktai, Naudotojo_receptai, Valgiarasciai, Komentarai, Valgymai, Valgomas_produktas, Valgymo_receptas
 
-admin.site.register(TodoItem)
 admin.site.register(Product, ImportExportActionModelAdmin)
 admin.site.register(Naudotojai)
 admin.site.register(Receptai)
