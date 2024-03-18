@@ -37,7 +37,7 @@
             {{ message }}
         </div>
     {% endfor %}
-{% endif %}
+  {% endif %}
 
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <a class="navbar-brand" href="{% url 'home' %}">ANTIFE</a>
@@ -47,10 +47,10 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav mr-auto">
         <li class="nav-item active">
-          <a class="nav-link" href="{% url 'home' %}">Forumas</a>
+          <a class="nav-link" href="{% url 'forumas:forumasview' %}">Forumas</a>
         </li>
         <li class="nav-item active">
-          <a class="nav-link" href="{% url 'home' %}">Kraujo tyrimai</a>
+          <a class="nav-link" href="{% url 'kraujo_tyrimai:kraujotyrview' %}">Kraujo tyrimai</a>
         </li>
         <!-- Mityba dropdown menu with Produktai and Receptai options -->
         <li class="nav-item dropdown">
@@ -58,14 +58,14 @@
             Mityba
           </a>
           <div class="dropdown-menu" aria-labelledby="mitybaDropdown">
-            <a class="dropdown-item" href="{% url 'product' %}">Produktai</a>
-            <a class="dropdown-item" href="{% url 'receptai_list' %}">Receptai</a>
-            <a class="dropdown-item" href="{% url 'create_recipe' %}">Sukurti recepta (pridesim i recepta veliau)</a>
-            <a class="dropdown-item" href="/receptai">Valgiaraštis</a>
+            <a class="dropdown-item" href="{% url 'mityba:product' %}">Produktai</a>
+            <a class="dropdown-item" href="{% url 'mityba:receptai_list' %}">Receptai</a>
+            <a class="dropdown-item" href="{% url 'mityba:create_recipe' %}">Sukurti recepta (pridesim i recepta veliau)</a>
+            <a class="dropdown-item" href="{% url 'mityba:valgiarastis' %}">Valgiaraštis</a>
           </div>
         </li>
         <li class="nav-item active">
-          <a class="nav-link" href="{% url 'home' %}">Profilis</a>
+          <a class="nav-link" href="{% url 'profilis:profilisview' %}">Profilis</a>
         </li>
       </ul>
       {% if user.is_authenticated %}

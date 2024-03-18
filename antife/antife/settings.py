@@ -39,6 +39,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'import_export',
     'homepage',
+    'Mityba',
+    'Forumas',
+    'Kraujo_tyrimai',
+    'Profilis',
+
 ]
 
 MIDDLEWARE = [
