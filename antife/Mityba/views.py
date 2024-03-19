@@ -9,7 +9,11 @@ def valgiarastis(request):
     return render(request, 'valgiarastis.html')
 
 def product(request):
-    products = Product.objects.all()
+    query = request.GET.get('query')
+    if query:
+        products = Product.objects.filter(name__icontains=query)
+    else:
+        products = Product.objects.all()
     return render(request, 'Product.html', {'products': products})
 
 def receptai_list(request):

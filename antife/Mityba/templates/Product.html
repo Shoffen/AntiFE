@@ -15,7 +15,7 @@
     }
 
     .container {
-      max-width: 800px;
+      max-width: 900px;
       margin: 20px auto;
       background-color: #fff;
       padding: 20px;
@@ -49,25 +49,67 @@
     .table tbody tr:nth-child(even) {
       background-color: #f2f2f2;
     }
+
+    .high {
+      color: red;
+    }
+
+    .medium {
+      color: orange;
+    }
+
+    .low {
+      color: green;
+    }
+
+    .search-form {
+      margin-bottom: 20px;
+    }
+
+    .search-input {
+      width: 300px;
+      padding: 8px;
+      font-size: 16px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    .search-button {
+      padding: 8px 16px;
+      font-size: 16px;
+      background-color: #3498db;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
   </style>
 
   <div class="container">
-    <h1 class="blue-text">Product List</h1>
+    <h1 class="blue-text">Produktų maistingumo peržiūra</h1>
+
+    <form action="" method="GET" class="search-form">
+      <input type="text" name="query" class="search-input" placeholder="Ieškoti pagal produkto vardą">
+      <button type="submit" class="search-button">Ieškoti</button>
+    </form>
+
     <table class="table">
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Calories</th>
-          <th>Total Fat</th>
-          <th>Fiber</th>
-          <th>Protein</th>
-          <th>Phenylalanine</th>
+          <th>Pavadinimas</th>
+          <th>Kalorijos</th>
+          <th>Riebalai</th>
+          <th>Angliavandeniai</th>
+          <th>Baltymai</th>
+          <th>Fenilalaninas</th>
         </tr>
       </thead>
       <tbody>
         {% for product in products %}
           <tr>
-            <td>{{ product.name }}</td>
+            <td class="{% if product.phenylalanine >= 0.4 %}high{% elif product.phenylalanine >= 0.1 %}medium{% else %}low{% endif %}">
+              {{ product.name }}
+            </td>
             <td>{{ product.calories }}</td>
             <td>{{ product.total_fat }}</td>
             <td>{{ product.fiber }}</td>
