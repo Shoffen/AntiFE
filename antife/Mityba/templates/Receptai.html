@@ -4,6 +4,8 @@
     <div class="container">
         <h2>Receptai</h2>
 
+        <a href="{% url 'mityba:create_recipe' %}" class="btn btn-primary custom-button">Sukurti naują receptą</a>
+
         <table class="styled-table">
             <thead>
                 <tr>
@@ -33,6 +35,10 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('redirectButton').addEventListener('click', function () {
+                window.location.href = 'https://example.com';
+            });
+
             const nameCells = document.querySelectorAll('.name-cell');
 
             nameCells.forEach(cell => {

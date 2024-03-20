@@ -11,7 +11,7 @@ def valgiarastis(request):
 def product(request):
     query = request.GET.get('query')
     if query:
-        products = Product.objects.filter(name__icontains=query)
+        products = Product.objects.filter(Q(name__icontains=query))
     else:
         products = Product.objects.all()
     return render(request, 'Product.html', {'products': products})
