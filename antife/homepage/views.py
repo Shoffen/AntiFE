@@ -48,7 +48,7 @@ def register(request):
                 password=hashed_password,  # Save hashed password
                 level=0  # Set default level or adjust as needed
             )
-            new_user.save()
+            new_user.save() 
             user = User.objects.create_user(username, email, password)
             user.save()
             messages.success(request, 'Registration successful. Now you can login!')
