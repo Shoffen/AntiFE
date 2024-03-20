@@ -79,6 +79,12 @@
                 })
                 .catch(error => console.error('Error creating recipe:', error));
             });
+
+            // Handle redirection when the "Sukurti recepta" button is clicked
+            document.getElementById('redirectButton').addEventListener('click', function () {
+                // Redirect to a different site
+                window.location.href = 'https://example.com'; // Change the URL to the desired site
+            });
         });
     </script>
 {% endblock %}
