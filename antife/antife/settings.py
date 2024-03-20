@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'Forumas',
     'Kraujo_tyrimai',
     'Profilis',
+    
 
 ]
 

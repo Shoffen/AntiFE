@@ -39,7 +39,7 @@ class Naudotojai(models.Model):
     level = models.IntegerField()
     last_login = models.DateTimeField(null=True, blank=True)
 
-    USERNAME_FIELD = 'username'
+  
 
 class Receptai(models.Model):
     kalorijos = models.FloatField(default=0.0)

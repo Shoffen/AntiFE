@@ -5,4 +5,5 @@ app_name = 'profilis'
 
 urlpatterns = [
     path('', views.profilisview, name='profilisview'),
+   
 ]

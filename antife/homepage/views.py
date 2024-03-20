@@ -14,6 +14,8 @@ def loged(request):
     return render(request, "baseLogged.html")
 
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import User
+
 
 def register(request):
     if request.method == 'POST':
@@ -38,7 +40,7 @@ def register(request):
             # Save the data to the database
             new_user = Naudotojai(
                 el_pastas=email,
-                usename=username,
+                username=username,
                 vardas=name,
                 telefonas=phoneNumber,
                 pavarde=lastName,
@@ -47,6 +49,8 @@ def register(request):
                 level=0  # Set default level or adjust as needed
             )
             new_user.save()
+            user = User.objects.create_user(username, email, password)
+            user.save()
             messages.success(request, 'Registration successful. Now you can login!')
             return redirect('/login')  # Change 'home' to the name of your homepage URL pattern
     
@@ -64,28 +68,14 @@ def login(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
         
-        # Authenticate against the admin credentials first
-        if username == "admink390":
-            admin_user = authenticate(request, username=username, password=password)
-            if admin_user is not None:
-                django_login(request, admin_user)
-                messages.success(request, "Login successful. Welcome, admin!")
-                return redirect('baseLogged.html')  # Adjust the URL name if needed
-            else:
-                messages.error(request, "Invalid admin credentials.")
-                return redirect('login.html')  # Redirect back to login page
+        user = authenticate(request, username=username, password=password)
             
+        if user is not None and user.is_active:
+            django_login(request, user)
+            messages.success(request, f"Login successful. Welcome, {username}")
+            return render(request, 'base.html')  # Redirect to the base logged page
         else:
-            # Authenticate against the Naudotojai model using the 'username' field
-            user = authenticate(request, username=username, password=password)
-            
-            if user is not None:
-                django_login(request, user)
-                messages.success(request, f"Login successful. Welcome, {username}")
-                return redirect('baseLogged.html')  # Adjust the URL name if needed
-            else:
-                messages.error(request, "Invalid username or password. Please try again.")
-                return render(request, 'login.html') # Redirect back to login page
+            messages.error(request, "Invalid username or password. Please try again.")
     
     return render(request, 'login.html')
 
@@ -93,14 +83,12 @@ def login(request):
 
 
 
-
-
-
-
-from django.contrib.auth import logout  # Import the logout function
+from django.contrib.auth import logout
+from django.shortcuts import redirect
 
 def logout_view(request):
     logout(request)
+    request.session.flush()  # Clear all session data
     return redirect('/')  # Redirect to the homepage or any other desired URL
 
 
