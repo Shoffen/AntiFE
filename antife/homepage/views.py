@@ -47,7 +47,7 @@ def register(request):
                 gimimo_data=birthday,
                 password=hashed_password,  # Save hashed password
                 level=0  # Set default level or adjust as needed
-            ) 
+            )  
             new_user.save() 
             user = User.objects.create_user(username, email, password)
             user.save()
