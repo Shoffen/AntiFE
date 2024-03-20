@@ -68,11 +68,11 @@
           <a class="nav-link" href="{% url 'profilis:profilisview' %}">Profilis</a>
         </li>
       </ul>
-      {% if user.is_authenticated %}
-        <button type="button" class="btn btn-primary custom-button" onclick="Loguot()">Atsijungti</button>
+      {% if request.user.is_authenticated %}
+      <button type="button" class="btn btn-primary custom-button" onclick="Loguot()">Atsijungti</button>
       {% else %}
-        <button type="button" class="btn btn-primary custom-button" onclick="openLogin()">Prisijungti</button>
-        <button type="button" class="btn btn-primary custom-button" onclick="openRegister()">Registruotis</button>
+      <button type="button" class="btn btn-primary custom-button" onclick="openLogin()">Prisijungti</button>
+      <button type="button" class="btn btn-primary custom-button" onclick="openRegister()">Registruotis</button>
       {% endif %}
     </div>
   </nav>
