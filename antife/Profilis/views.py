@@ -8,11 +8,14 @@ def profilisview(request):
     pavarde = None
     telefonas = None
     gimimo_Data = None
+    el_pastas = None
+    password =  None
 
     if request.user.is_authenticated:
         user_id = request.user.id
         username = request.user.username
         el_pastas = request.user.email
+        password = request.user.password
         try:
             # Assuming there's a OneToOneField or ForeignKey relationship between Naudotojai and User
             naudotojas = Naudotojai.objects.get(user=request.user)
@@ -27,6 +30,7 @@ def profilisview(request):
     context = {
         'user_id': user_id,
         'username': username,
+        'password': password,
         'vardas' : vardas,
         'pavarde': pavarde,
         'telefonas': telefonas,
