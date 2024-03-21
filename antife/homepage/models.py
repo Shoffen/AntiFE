@@ -26,18 +26,18 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
-from django.utils import timezone
+from django.contrib.auth.models import User
 
 class Naudotojai(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, default=None)
     vardas = models.CharField(max_length=255)
     pavarde = models.CharField(max_length=255)
     telefonas = models.CharField(max_length=255)
     el_pastas = models.CharField(max_length=255)
     gimimo_data = models.DateField()
-    username = models.CharField(max_length=255)  
-    password = models.CharField(max_length=255)
     level = models.IntegerField()
     last_login = models.DateTimeField(null=True, blank=True)
+    
 
   
 
