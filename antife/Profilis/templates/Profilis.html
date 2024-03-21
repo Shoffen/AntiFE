@@ -16,6 +16,29 @@
     {% else %}
         <p>User ID not available</p>
     {% endif %}
-    <!-- Other profile information can be displayed here -->
+    {% if vardas %}
+        <p>Vardas: {{ vardas }}</p>
+    {% else %}
+        <p>Vardas not available</p>
+    {% endif %}
+    {% if pavarde %}
+        <p>Pavardė: {{ pavarde }}</p>
+    {% else %}
+        <p>Pavarde not available</p>
+    {% endif %}
+    {% if telefonas %}
+        <p>Telefono numeris: {{ telefonas }}</p>
+    {% else %}
+        <p>Telefono numeris not available</p>
+    {% endif %}
+    {% if gimimo_Data %}
+        <p>Gimimo data: {{ gimimo_Data }}</p>
+    {% else %}
+        <p>Gimimo data not available</p>
+    {% endif %}
+    {% if el_pastas %}
+        <p>Elektroninis paštas: {{ el_pastas }}</p>
+    {% else %}
+        <p>Elektroninis paštas negalimas</p>
+    {% endif %}
 {% endblock %}
-
