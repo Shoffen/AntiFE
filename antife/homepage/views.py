@@ -17,6 +17,13 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 
 
+from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Naudotojai
+import re
+
 def register(request):
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -30,31 +37,33 @@ def register(request):
         # Validate email format using regular expression
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             messages.error(request, 'Invalid email format. Please enter a valid email address.')
-        elif Naudotojai.objects.filter(el_pastas=email).exists():
+        elif User.objects.filter(email=email).exists():
             # Set the message if the email already exists
             messages.error(request, 'Email is already registered.')
         else:
+            # Create a new user account
+            user = User.objects.create_user(username=username, email=email, password=password)
+            user.save()
+
             # Hash the password
             hashed_password = make_password(password)
             
-            # Save the data to the database
-            new_user = Naudotojai(
-                el_pastas=email,
-                username=username,
+            # Save the user profile data to the database
+            new_user_profile = Naudotojai(
+                user=user,  # Associate the profile with the newly created user
                 vardas=name,
                 telefonas=phoneNumber,
                 pavarde=lastName,
                 gimimo_data=birthday,
-                password=hashed_password,  # Save hashed password
                 level=0  # Set default level or adjust as needed
             )  
-            new_user.save() 
-            user = User.objects.create_user(username, email, password)
-            user.save()
+            new_user_profile.save() 
+
             messages.success(request, 'Registration successful. Now you can login!')
             return redirect('/login')  # Change 'home' to the name of your homepage URL pattern
     
     return render(request, 'register.html')
+
 
 
 
