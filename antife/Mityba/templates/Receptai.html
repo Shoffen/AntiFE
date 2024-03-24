@@ -22,10 +22,9 @@
                         <td>{{ receptas.fenilalaninas }}</td>
                     </tr>
                     <tr>
-                        <td id="aprasas-header-{{ forloop.counter }}" style="display: none;"></td>
-                        <td id="aprasas-{{ forloop.counter }}" style="display: none; padding: 10px; background-color: #f2f2f2; border: 1px solid #ddd;" colspan="3">
+                        <td colspan="3" id="aprasas-{{ forloop.counter }}" style="display: none; padding: 10px; background-color: #f2f2f2; border: 1px solid #ddd;">
                             <h3>Aprasas</h3>
-                            {{ receptas.aprasas }}
+                            <p>{{ receptas.aprasas }}</p>
                         </td>
                     </tr>
                 {% endfor %}
@@ -35,25 +34,17 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            document.getElementById('redirectButton').addEventListener('click', function () {
-                window.location.href = 'https://example.com';
-            });
-
             const nameCells = document.querySelectorAll('.name-cell');
 
             nameCells.forEach(cell => {
                 cell.addEventListener('click', function () {
                     const targetId = this.getAttribute('data-toggle');
-                    const targetHeaderId = `${targetId}-header`;
                     const targetElement = document.getElementById(targetId);
-                    const targetHeaderElement = document.getElementById(targetHeaderId);
 
                     if (targetElement.style.display === 'none') {
                         targetElement.style.display = '';
-                        targetHeaderElement.style.display = '';
                     } else {
                         targetElement.style.display = 'none';
-                        targetHeaderElement.style.display = 'none';
                     }
                 });
             });

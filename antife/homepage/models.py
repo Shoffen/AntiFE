@@ -12,10 +12,6 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
-from django.db import models
-
-# Create your models here.
-
 class Product(models.Model):
     name = models.CharField(max_length=255)
     calories = models.DecimalField(max_digits=5, decimal_places=2)
@@ -39,8 +35,6 @@ class Naudotojai(models.Model):
     last_login = models.DateTimeField(null=True, blank=True)
     
 
-  
-
 class Receptai(models.Model):
     kalorijos = models.FloatField(default=0.0)
     pavadinimas = models.CharField(max_length=255)
@@ -53,7 +47,7 @@ class Forumai(models.Model):
 class Irasai(models.Model):
     tekstas = models.CharField(max_length=255)
     data = models.DateField()
-    fk_Forumasid_Forumas = models.ForeignKey(Forumai, on_delete=models.CASCADE)
+    fk_Forumasid_Forumas = models.ForeignKey(Forumai, on_delete=models.CASCADE, related_name='topics')
     fk_Naudotojasid_Naudotojas = models.ForeignKey(Naudotojai, on_delete=models.CASCADE)
 
 class Kraujo_tyrimai(models.Model):
@@ -92,8 +86,6 @@ class Valgomas_produktas(models.Model):
 class Valgymo_receptas(models.Model):
     fk_Receptasid_Receptas = models.ForeignKey(Receptai, on_delete=models.CASCADE)
     fk_Valgymasid_Valgymas = models.ForeignKey(Valgymai, on_delete=models.CASCADE)
-
-
 
 class Receptai(models.Model):
     kalorijos = models.FloatField(default=0.0)

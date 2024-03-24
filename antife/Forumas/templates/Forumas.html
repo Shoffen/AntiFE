@@ -5,5 +5,75 @@
 {% endblock %}
 
 {% block content %}
-    <h1>This gon be Forumas</h1>
+    <div class="container">
+        <h1>Forumas</h1>
+        
+        <!-- Add form to allow users to create a new topic -->
+        <form method="post" action="{% url 'Forumas:create_topic' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="topic_title">Title:</label>
+                <input type="text" class="form-control" id="topic_title" name="title" required>
+            </div>
+            <div class="form-group">
+                <label for="post_text">Text:</label>
+                <textarea class="form-control" id="post_text" name="text" rows="5" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Create Topic</button>
+        </form>
+        
+        <hr>
+        
+        <!-- Display existing topics -->
+        {% if topics %}
+            <div class="row">
+                {% for topic in topics reversed %}
+                    <div class="col-md-8">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title" onclick="togglePost('{{ topic.id }}')" title="Noredami pamatyti tekstą spustelekite cia">
+                                    {{ topic.pavadinimas }}
+                                </h5>
+                                <div id="post_{{ topic.id }}" style="display: none;" class="styled-box">
+                                    <ul>
+                                        {% for irasas in topic.irasai_set.all reversed %}
+                                            <li>{{ irasas.tekstas }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                <p>
+                                    <small class="text-muted">
+                                        Posted by {{ username }} on {{ topic.irasai_set.last.data }}
+                                    </small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>No topics yet.</p>
+        {% endif %}
+    </div>
+
+    <script>
+        function togglePost(topicId) {
+            var post = document.getElementById('post_' + topicId);
+            if (post.style.display === 'none') {
+                post.style.display = 'block';
+            } else {
+                post.style.display = 'none';
+            }
+        }
+    </script>
+
+    <style>
+        .styled-box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+    </style>
 {% endblock %}
