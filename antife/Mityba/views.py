@@ -1,12 +1,17 @@
 from django.shortcuts import render, HttpResponse, redirect
-from homepage.models import Product, Receptai, Naudotojai
-from django.db.models import Q
+from homepage.models import Product, Receptai, Naudotojai, Valgymai, Valgiarasciai
+from django.db.models import Q, F
 from django.contrib.auth import authenticate
 from django.contrib import messages
 from django.http import JsonResponse
+from django import forms
+from .forms import ValgymasForm
 
 def valgiarastis(request):
     return render(request, 'valgiarastis.html')
+
+def valgymas(request):
+    return render(request, 'valgymas.html')
 
 def product(request):
     query = request.GET.get('query')
@@ -56,3 +61,29 @@ def create_recipe_view(request):
     # If the request method is not POST, render the template
     products = Product.objects.all()
     return render(request, 'receptukurimas.html', {'products': products})
+
+def create_valgiarastis(request):
+    if request.method == 'POST':
+        selected_date = request.POST.get('date-input')
+        if selected_date:
+            Valgiarasciai = Valgiarasciai.objects.create(
+                diena=0,
+                fenilalaninas=0,
+                data=selected_date,
+                naudotojas=1
+            )
+            return redirect('success_url')
+    else:
+        return render(request, 'valgiarastis.html')
+
+def create_valgymas(request):
+    if request.method == 'POST':
+        form = ValgymasForm(request.POST)
+        if form.is_valid():
+            valgymas = form.save(commit=False)
+            valgymas.tipas = 'pusryciai'
+            valgymas.save()
+            return redirect('valgymas_detail', pk=valgymas.pk)
+    else:
+        form = ValgymasForm()
+    return render(request, 'valgymas.html', {'form': form})

@@ -100,4 +100,12 @@ def logout_view(request):
     request.session.flush()  # Clear all session data
     return redirect('/')  # Redirect to the homepage or any other desired URL
 
-
+def get_naudotojai_id(request):
+    if request.user.is_authenticated:
+        try:
+            naudotojai = Naudotojai.objects.get(user=request.user)
+            return naudotojai.id
+        except Naudotojai.DoesNotExist:
+            return None
+    else:
+        return None
