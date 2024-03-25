@@ -64,10 +64,13 @@ class Naudotojo_receptai(models.Model):
     fk_Naudotojasid_Naudotojas = models.ForeignKey(Naudotojai, on_delete=models.CASCADE)
 
 class Valgiarasciai(models.Model):
-    diena = models.IntegerField()
-    bendras_fenilalaninas = models.IntegerField()
+    diena = models.IntegerField(default=0)
+    fenilalaninas = models.IntegerField(default=0)
     data = models.DateField()
     fk_Naudotojasid_Naudotojas = models.ForeignKey(Naudotojai, on_delete=models.CASCADE)
+    def __str__(self):
+        return f"{self.data}: {self.diena} {self.fenilalaninas} {self.naudotojas}"   
+
 
 class Komentarai(models.Model):
     tekstas = models.CharField(max_length=255)
