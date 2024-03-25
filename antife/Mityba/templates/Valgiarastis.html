@@ -1,9 +1,67 @@
 {% extends 'base.html' %}
 
-{% block title %}
-    Valgiarastis
-{% endblock %}
-
 {% block content %}
-    <h1>This gon be Valgiarastis</h1>
+<head>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar/index.global.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/locales/lt.js"></script>
+</head>
+
+<div id="calendar"></div>
+<button id="createBtn" name="create_button" onclick="createValgiarastis()" class="btn btn-primary" style="display: none" data-date="{{ current_date }}">Create</button>
+
+<script>
+    const createValgiarastisUrl = document.getElementById("createBtn").getAttribute("data-url");
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+        console.log(calendarEl);
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            locale: 'lt',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: ''
+            },
+            selectable: true,
+            select: function(info) {
+                selectedDate = info.startStr;
+                updateCreateButton();
+            },
+            events: []
+        });
+        calendar.render();
+    });
+
+    let selectedDate;
+
+    function updateCreateButton() {
+        const createButtonEl = document.getElementById("createBtn");
+        createButtonEl.setAttribute("data-date", selectedDate);
+        if (selectedDate) {
+            createButtonEl.style.display = "block";
+        } else {
+            createButtonEl.style.display = "none";
+        }
+    }
+
+    function createValgiarastis() {
+        const createBtnEl = document.getElementById("createBtn");
+        const selectedDate = createBtnEl.getAttribute("data-date");
+        fetch("../create_valgiarastis/", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                date_input: selectedDate
+            })
+        }).then((response) => {
+            if (response.ok) {
+                window.location.reload();
+            } else {
+            }
+        });
+    }
+</script>
 {% endblock %}
