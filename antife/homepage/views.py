@@ -24,6 +24,8 @@ from django.contrib import messages
 from .models import Naudotojai
 import re
 
+from datetime import datetime
+
 def register(request):
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -33,14 +35,31 @@ def register(request):
         phoneNumber = request.POST.get('phoneNumber')
         birthday = request.POST.get('birthday')
         password = request.POST.get('password')
-        
+        if User.objects.filter(username=username):
+            messages.error(request, 'Šis slapyvardis jau užimtas!')
+            return render (request, 'register.html')
         # Validate email format using regular expression
-        if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-            messages.error(request, 'Invalid email format. Please enter a valid email address.')
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", email) or not email.endswith('@gmail.com'):
+            messages.error(request, 'Neteisingai įvestas elektronins paštas. Įveskite teisingą.')
         elif User.objects.filter(email=email).exists():
             # Set the message if the email already exists
-            messages.error(request, 'Email is already registered.')
+            messages.error(request, 'Šis elektroninis paštas jau užimtas.')
+        elif not re.match(r"\+370\d{8}", phoneNumber):
+            # Validate phone number format
+            # ^\+370 - starts with +370
+            # \d{8}$ - followed by exactly 8 digits
+            messages.error(request, 'Neteisingai įvestas telefono numeris. Įveskite per naują' )
         else:
+            # Validate birthdate format and range
+            try:
+                birthdate_obj = datetime.strptime(birthday, '%Y-%m-%d').date()
+                today = datetime.now().date()
+                if birthdate_obj >= today:
+                    raise ValueError  # Birthdate should be in the past
+            except ValueError:
+                messages.error(request, 'Neteisinga gimimo data. Pasirinkite dar kartą.')
+                return render(request, 'register.html')
+            
             # Create a new user account
             user = User.objects.create_user(username=username, email=email, password=password)
             user.save()
@@ -54,15 +73,16 @@ def register(request):
                 vardas=name,
                 telefonas=phoneNumber,
                 pavarde=lastName,
-                gimimo_data=birthday,
+                gimimo_data=birthdate_obj,
                 level=0  # Set default level or adjust as needed
             )  
             new_user_profile.save() 
 
-            messages.success(request, 'Registration successful. Now you can login!')
+            messages.success(request, f'Registracija sėkminga. Gali bandyt prisijungt!')
             return redirect('/login')  # Change 'home' to the name of your homepage URL pattern
     
     return render(request, 'register.html')
+
 
 
 
@@ -81,10 +101,10 @@ def login(request):
             
         if user is not None and user.is_active:
             django_login(request, user)
-            messages.success(request, f"Login successful. Welcome, {username}")
+            messages.success(request, f"Sėkmingai prisijungėte! Sveiki, {username}")
             return render(request, 'base.html')  # Redirect to the base logged page
         else:
-            messages.error(request, "Invalid username or password. Please try again.")
+            messages.error(request, "Neteisingi prisijungimo duomenys. Bandyk dar kartą.")
     
     return render(request, 'login.html')
 

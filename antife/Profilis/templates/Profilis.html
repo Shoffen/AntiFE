@@ -3,47 +3,114 @@
 {% block title %}
     Profilis
 {% endblock %}
+{% load static %} 
 
 {% block content %}
-    <h1>Profile Information</h1>
-    {% if user_id %}
-        <p>User ID: {{ user_id }}</p>
-    {% else %}
-        <p>User ID not available</p>
-    {% endif %}
-    {% if username %}
-        <p>Username: {{ username }}</p>
-    {% else %}
-        <p>Username not available</p>
-    {% endif %}
-    {% if password %}
-        <p>Slaptažodis: {{ password }}</p>
-    {% else %}
-        <p>Slaptažodis not available</p>
-    {% endif %}
-    {% if vardas %}
-        <p>Vardas: {{ vardas }}</p>
-    {% else %}
-        <p>Vardas not available</p>
-    {% endif %}
-    {% if pavarde %}
-        <p>Pavardė: {{ pavarde }}</p>
-    {% else %}
-        <p>Pavarde not available</p>
-    {% endif %}
-    {% if telefonas %}
-        <p>Telefono numeris: {{ telefonas }}</p>
-    {% else %}
-        <p>Telefono numeris not available</p>
-    {% endif %}
-    {% if gimimo_Data %}
-        <p>Gimimo data: {{ gimimo_Data }}</p>
-    {% else %}
-        <p>Gimimo data not available</p>
-    {% endif %}
-    {% if el_pastas %}
-        <p>Elektroninis paštas: {{ el_pastas }}</p>
-    {% else %}
-        <p>Elektroninis paštas negalimas</p>
-    {% endif %}
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/profile.css' %}">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1>Profile Information</h1>
+        <!-- Button to toggle edit mode -->
+        <button type="button" class="btn btn-primary custom-button" id="editProfileBtn">Redaguoti</button>
+    </div>
+    <div class="profile-info" id="profileInfoContainer">
+        <div class="profile-info-item">
+            {% if user_id %}
+                <p>User ID: {{ user_id }}</p>
+            {% else %}
+                <p>User ID not available</p>
+            {% endif %}
+        </div>
+        <div class="profile-info-item">
+            {% if username %}
+                <p>Username: {{ username }}</p>
+            {% else %}
+                <p>Username not available</p>
+            {% endif %}
+        </div>
+        <div class="profile-info-item">
+            {% if vardas %}
+                <p>Vardas: {{ vardas }}</p>
+            {% else %}
+                <p>Vardas not available</p>
+            {% endif %}
+        </div>
+        <div class="profile-info-item">
+            {% if pavarde %}
+                <p>Pavardė: {{ pavarde }}</p>
+            {% else %}
+                <p>Pavarde not available</p>
+            {% endif %}
+        </div>
+        <div class="profile-info-item">
+            {% if telefonas %}
+                <p>Telefono numeris: {{ telefonas }}</p>
+            {% else %}
+                <p>Telefono numeris not available</p>
+            {% endif %}
+        </div>
+        <div class="profile-info-item">
+            {% if gimimo_Data %}
+                <p>Gimimo data: {{ gimimo_Data }}</p>
+            {% else %}
+                <p>Gimimo data not available</p>
+            {% endif %}
+        </div>
+        <div class="profile-info-item">
+            {% if el_pastas %}
+                <p>Elektroninis paštas: {{ el_pastas }}</p>
+            {% else %}
+                <p>Elektroninis paštas negalimas</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Editing form (initially hidden) -->
+    <form id="editProfileForm" style="display: none;" action="{% url 'profilis:save_profile_changes' %}" method="post">
+
+        {% csrf_token %}
+        <!-- Include input fields for each profile information item -->
+        <div class="profile-info-item">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" value="{{ username }}">
+        </div>
+        <div class="profile-info-item">
+            <label for="vardas">Vardas:</label>
+            <input type="text" id="vardas" name="vardas" value="{{ vardas }}">
+        </div>
+        <div class="profile-info-item">
+            <label for="pavarde">Pavardė:</label>
+            <input type="text" id="pavarde" name="pavarde" value="{{ pavarde }}">
+        </div>
+        <div class="profile-info-item">
+            <label for="telefonas">Telefono numeris:</label>
+            <input type="text" id="telefonas" name="telefonas" value="{{ telefonas }}">
+        </div>
+        <div class="profile-info-item">
+            <label for="gimimo_Data">Gimimo data:</label>
+            <div class="input-box">
+                <input type="date" name="birthday" placeholder="Gimimo data" required>
+                <i class='bx bx-calendar' ></i>
+              </div>
+        </div>
+        <div class="profile-info-item">
+            <label for="el_pastas">Elektroninis paštas:</label>
+            <input type="text" id="el_pastas" name="el_pastas" value="{{ el_pastas }}">
+        </div>
+
+        <!-- Submit button -->
+        <button type="submit" class="btn btn-primary">Išsaugoti</button>
+    </form>
+
+    <!-- JavaScript to handle toggling edit mode -->
+    <script>
+        document.getElementById("editProfileBtn").addEventListener("click", function() {
+            // Toggle visibility of the editing form
+            var editProfileForm = document.getElementById("editProfileForm");
+            editProfileForm.style.display = editProfileForm.style.display === "none" ? "block" : "none";
+
+            // Toggle visibility of the profile information container
+            var profileInfoContainer = document.getElementById("profileInfoContainer");
+            profileInfoContainer.style.display = profileInfoContainer.style.display === "none" ? "block" : "none";
+        });
+    </script>
 {% endblock %}
