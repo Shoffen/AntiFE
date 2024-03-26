@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django import forms
 from .forms import ValgymasForm
 import json
-from homepage.views import get_naudotojas
+
 
 def valgiarastis(request):
     return render(request, 'valgiarastis.html')

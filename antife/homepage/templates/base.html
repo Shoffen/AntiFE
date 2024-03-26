@@ -69,9 +69,11 @@
             {% endif %}
           </div>
         </li>
+        {% if request.user.is_authenticated %}
         <li class="nav-item active">
           <a class="nav-link" href="{% url 'profilis:profilisview' %}">Profilis</a>
         </li>
+        {% endif %}
       </ul>
       {% if request.user.is_authenticated %}
       <button type="button" class="btn btn-primary custom-button" onclick="Loguot()">Atsijungti</button>
