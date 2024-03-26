@@ -12,21 +12,40 @@
                     <th>Pavadinimas</th>
                     <th>Kalorijos</th>
                     <th>Fenilalaninas</th>
+                    <th>Veiksmai</th> <!-- Added a new column for actions -->
                 </tr>
             </thead>
             <tbody>
                 {% for receptas in receptai_list %}
                     <tr>
-                        <td class="name-cell" data-toggle="aprasas-{{ forloop.counter }}">{{ receptas.pavadinimas }}</td>
+                        <td class="name-cell" data-toggle="aprasas-{{ forloop.counter }}" data-ingredientai="ingredientai-{{ forloop.counter }}">{{ receptas.pavadinimas }}</td>
                         <td>{{ receptas.kalorijos }}</td>
                         <td>{{ receptas.fenilalaninas }}</td>
+                        <td> <!-- Initially empty cell for Remove button -->
+                            <div id="remove-button-container-{{ forloop.counter }}">
+                                {% if user.is_authenticated %}
+                                    <button class="btn btn-danger remove-recipe" data-id="{{ receptas.id }}">X</button>
+                                {% endif %}
+                            </div>
+                        </td>
                     </tr>
                     <tr>
-                        <td colspan="3" id="aprasas-{{ forloop.counter }}" style="display: none; padding: 10px; background-color: #f2f2f2; border: 1px solid #ddd;">
+                        <td colspan="4" id="ingredientai-{{ forloop.counter }}" style="display: none; padding: 10px; background-color: #f2f2f2; border: 1px solid #ddd;">
+                            <h3>Ingredientai</h3>
+                            <ul>
+                                {% for recepto_produktai in receptas.recepto_produktai_set.all %}
+                                    <li>{{ recepto_produktai.fk_Produktasid_Produktas.name }} - {{ recepto_produktai.amount }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" id="aprasas-{{ forloop.counter }}" style="display: none; padding: 10px; background-color: #f2f2f2; border: 1px solid #ddd;">
                             <h3>Aprasas</h3>
                             <p>{{ receptas.aprasas }}</p>
                         </td>
                     </tr>
+                    
                 {% endfor %}
             </tbody>
         </table>
@@ -34,23 +53,59 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Event listener for clicking on recipe cells
             const nameCells = document.querySelectorAll('.name-cell');
-
             nameCells.forEach(cell => {
                 cell.addEventListener('click', function () {
-                    const targetId = this.getAttribute('data-toggle');
-                    const targetElement = document.getElementById(targetId);
-
-                    if (targetElement.style.display === 'none') {
-                        targetElement.style.display = '';
+                    const targetIdAprasas = this.getAttribute('data-toggle');
+                    const targetIdIngredientai = this.getAttribute('data-ingredientai');
+                    const targetElementAprasas = document.getElementById(targetIdAprasas);
+                    const targetElementIngredientai = document.getElementById(targetIdIngredientai);
+                    
+                    // Toggle the display of both description and ingredients sections
+                    if (targetElementAprasas.style.display === 'none') {
+                        targetElementAprasas.style.display = '';
+                        targetElementIngredientai.style.display = '';
                     } else {
-                        targetElement.style.display = 'none';
+                        targetElementAprasas.style.display = 'none';
+                        targetElementIngredientai.style.display = 'none';
                     }
+                });
+            });
+    
+            // Event listener for remove recipe buttons
+            const removeRecipeButtons = document.querySelectorAll('.remove-recipe');
+            removeRecipeButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const recipeId = this.getAttribute('data-id');
+    
+                    // Send AJAX request to remove the recipe
+                    fetch(`/mityba/receptai_list/${recipeId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            // If the deletion was successful, remove the corresponding recipe from UI
+                            const recipeRow = this.closest('tr');
+                            recipeRow.remove();
+                            // Display alert for successful removal
+                            alert('Receptas buvo sėkmingai pašalintas');
+                        } else {
+                            console.error('Failed to remove recipe');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error removing recipe:', error);
+                    });
                 });
             });
         });
     </script>
-
+    
     <style>
         body {
             font-family: 'Arial', sans-serif;
