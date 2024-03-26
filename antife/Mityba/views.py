@@ -1,12 +1,14 @@
-from django.shortcuts import render, HttpResponse, redirect
+from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from homepage.models import Product, Receptai, Naudotojai, Valgymai, Valgiarasciai, Recepto_produktai
-from django.db.models import Q, F, Sum, ExpressionWrapper, DecimalField
+from django.db.models import Q, F
 from django.contrib.auth import authenticate
 from django.contrib import messages
 from django.http import JsonResponse
 from django import forms
 from .forms import ValgymasForm
 from decimal import Decimal
+import json
+
 
 def valgiarastis(request):
     return render(request, 'valgiarastis.html')
@@ -106,15 +108,22 @@ def remove_recipe_view(request, recipe_id):
 
 def create_valgiarastis(request):
     if request.method == 'POST':
-        selected_date = request.POST.get('date-input')
+        data = json.loads(request.body)
+        selected_date = data.get('date_input')
+        naudotojas = Naudotojai.objects.get(user=request.user)
+
         if selected_date:
-            Valgiarasciai = Valgiarasciai.objects.create(
+            existing_valgiarasciai = Valgiarasciai.objects.filter(data=selected_date, fk_Naudotojasid_Naudotojas=naudotojas)
+            
+            if existing_valgiarasciai.exists():
+                return JsonResponse({'status': 'jau yra'})   
+            Valgiarastis = Valgiarasciai.objects.create(
                 diena=0,
-                fenilalaninas=0,
+                bendras_fenilalaninas=0,
                 data=selected_date,
-                naudotojas=1
+                fk_Naudotojasid_Naudotojas=naudotojas
             )
-            return redirect('success_url')
+            return JsonResponse({'status': 'success'})
     else:
         return render(request, 'valgiarastis.html')
 
