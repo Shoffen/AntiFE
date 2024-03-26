@@ -66,10 +66,10 @@
             if (data.status == 'success') {
                 //cia jei sukurs nauja
                 //cia reiks padaryt kad paduotu ir sellected date ir tada pagal ta data jau valgyme susirasiu ka atidaryt kuri
-                window.open("{% url 'mityba:valgymas' %}", "_self");
+                window.location.href = "{% url 'mityba:valgymas' %}";
             } else {
                 //cia jei atidarys jau sukurta nes sukurt negales nes jau bus su ta data pakurtas
-                window.open("{% url 'mityba:valgymas' %}", "_self");
+                window.location.href = "{% url 'mityba:valgymas' %}";
             }
         });
     }
