@@ -7,7 +7,7 @@
 </head>
 
 <div id="calendar"></div>
-<button id="createBtn" name="create_button" onclick="createValgiarastis()" class="btn btn-primary" style="display: none" data-date="{{ current_date }}">Create</button>
+<button id="createBtn" name="create_button" onclick="createValgiarastis()" class="btn btn-primary" style="display: none" data-date="{{ current_date }}">Atidaryti</button>
 
 <script>
     const createValgiarastisUrl = document.getElementById("createBtn").getAttribute("data-url");
@@ -38,6 +38,7 @@
         const createButtonEl = document.getElementById("createBtn");
         createButtonEl.setAttribute("data-date", selectedDate);
         if (selectedDate) {
+            console.log(selectedDate);
             createButtonEl.style.display = "block";
         } else {
             createButtonEl.style.display = "none";
@@ -45,9 +46,10 @@
     }
 
     function createValgiarastis() {
-        const createBtnEl = document.getElementById("createBtn");
-        const selectedDate = createBtnEl.getAttribute("data-date");
-        fetch("../create_valgiarastis/", {
+    const createButtonEl = document.getElementById("createBtn");
+    const selectedDate = createButtonEl.getAttribute("data-date");
+    if (selectedDate) {
+        fetch("{% url 'mityba:create_valgiarastis' %}", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -55,13 +57,24 @@
             },
             body: JSON.stringify({
                 date_input: selectedDate
-            })
-        }).then((response) => {
-            if (response.ok) {
-                window.location.reload();
+            }),
+        })
+        .then((response) => {
+            return response.json();
+        })
+        .then((data) => {
+            if (data.status == 'success') {
+                //cia jei sukurs nauja
+                //cia reiks padaryt kad paduotu ir sellected date ir tada pagal ta data jau valgyme susirasiu ka atidaryt kuri
+                window.open("{% url 'mityba:valgymas' %}", "_self");
             } else {
+                //cia jei atidarys jau sukurta nes sukurt negales nes jau bus su ta data pakurtas
+                window.open("{% url 'mityba:valgymas' %}", "_self");
             }
         });
     }
+}
+
+
 </script>
 {% endblock %}
