@@ -55,9 +55,6 @@ class Kraujo_tyrimai(models.Model):
     fenilalaninas = models.IntegerField()
     fk_Naudotojasid_Naudotojas = models.ForeignKey(Naudotojai, on_delete=models.CASCADE)
 
-class Recepto_produktai(models.Model):
-    fk_Receptasid_Receptas = models.ForeignKey(Receptai, on_delete=models.CASCADE)
-    fk_Produktasid_Produktas = models.ForeignKey(Product, on_delete=models.CASCADE)
 
 class Naudotojo_receptai(models.Model):
     fk_Receptasid_Receptas = models.ForeignKey(Receptai, on_delete=models.CASCADE)
@@ -113,6 +110,7 @@ class Kraujo_tyrimai(models.Model):
 class Recepto_produktai(models.Model):
     fk_Receptasid_Receptas = models.ForeignKey(Receptai, on_delete=models.CASCADE)
     fk_Produktasid_Produktas = models.ForeignKey(Product, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
 
 class Naudotojo_receptai(models.Model):
     fk_Receptasid_Receptas = models.ForeignKey(Receptai, on_delete=models.CASCADE)

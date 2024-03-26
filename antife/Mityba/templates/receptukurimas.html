@@ -2,39 +2,49 @@
 
 {% block content %}
     <div class="container">
-        <h2>Create a Recipe</h2>
+        <h2>Sukurkite receptą</h2>
 
         <form id="recipeForm">
             {% csrf_token %}  <!-- Add this line to include CSRF token -->
 
             <div class="form-group">
-                <label for="recipeName">Recipe Name:</label>
+                <label for="recipeName">Recepto pavadinimas:</label>
                 <input type="text" id="recipeName" name="recipeName" class="form-control" required>
             </div>
 
-            <div id="ingredientList">
-                <div class="ingredient">
-                    <label for="ingredient1">Ingredient:</label>
-                    <select id="ingredient1" name="ingredient[]" class="form-control" required>
-                        <option value="" selected disabled>Select Ingredient</option>
-                        {% for product in products %}
-                            <option value="{{ product.name }}">{{ product.name }}</option>
-                        {% endfor %}
-                    </select>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div id="ingredientList">
+                        <div class="ingredient">
+                            <label for="ingredient1">Ingredientas:</label>
+                            <select id="ingredient1" name="ingredient[]" class="form-control" required>
+                                <option value="" selected disabled>Pasirinkite Ingredientą</option>
+                                {% for product in products %}
+                                    <option value="{{ product.name }}">{{ product.name }}</option>
+                                {% endfor %}
+                            </select>
 
-                    <label for="amount1">Amount (grams):</label>
-                    <input type="number" id="amount1" name="amount[]" class="form-control" required>
+                            <label for="amount1">Kiekis (gramais):</label>
+                            <input type="number" id="amount1" name="amount[]" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="row">
+                        <div class="col">
+                            <button type="button" id="addIngredient" class="btn btn-primary">+</button>
+                        </div>
+                        
+                    </div>
                 </div>
             </div>
 
-            <button type="button" id="addIngredient" class="btn btn-primary">Add Ingredient</button>
-
             <div class="form-group">
-                <label for="recipeSummary">Recipe Summary:</label>
+                <label for="recipeSummary">Aprašas:</label>
                 <textarea id="recipeSummary" name="recipeSummary" class="form-control" rows="4"></textarea>
             </div>
 
-            <button type="submit" class="btn btn-success">Create Recipe</button>
+            <button type="submit" class="btn btn-success">Sukurti receptą</button>
         </form>
     </div>
 
@@ -47,18 +57,26 @@
                 newIngredient.classList.add('ingredient');
 
                 newIngredient.innerHTML = `
-                    <label for="ingredient${ingredientCount}">Ingredient:</label>
+                    <label for="ingredient${ingredientCount}">Ingredientas:</label>
                     <select id="ingredient${ingredientCount}" name="ingredient[]" class="form-control" required>
-                        <option value="" selected disabled>Select Ingredient</option>
+                        <option value="" selected disabled>Pasirinkite ingredientą</option>
                         {% for product in products %}
                             <option value="{{ product.name }}">{{ product.name }}</option>
                         {% endfor %}
                     </select>
 
-                    <label for="amount${ingredientCount}">Amount (grams):</label>
+                    <label for="amount${ingredientCount}">Kiekis (gramais):</label>
                     <input type="number" id="amount${ingredientCount}" name="amount[]" class="form-control" required>
+                    <button type="button" class="btn btn-danger removeIngredient">✕</button> <!-- Button to remove ingredient -->
                 `;
                 ingredientList.appendChild(newIngredient);
+            });
+
+            // Event listener for removing ingredients
+            document.getElementById('ingredientList').addEventListener('click', function (event) {
+                if (event.target.classList.contains('removeIngredient')) {
+                    event.target.closest('.ingredient').remove();
+                }
             });
 
             document.getElementById('recipeForm').addEventListener('submit', function (event) {
@@ -68,26 +86,25 @@
                 const formData = new FormData(this);
 
                 // Send AJAX request to server
-                fetch('/create-recipe/', {
+                fetch('', {
                     method: 'POST',
                     body: formData
                 })
                 .then(response => response.json())
                 .then(data => {
                     console.log('Server response:', data);
-                    // Handle response if needed (e.g., display a success message)
+                    // Check if the recipe was created successfully
+                    if (data.success) {
+                        alert('Recipe created successfully!');
+                        // Redirect to another page if needed
+                        // window.location.href = '/success-url';
+                    } else {
+                        alert('Recipe created successfully!');
+                        window.location.href = '/mityba/receptai_list';
+                    }
                 })
                 .catch(error => console.error('Error creating recipe:', error));
-            });
-
-            // Handle redirection when the "Sukurti recepta" button is clicked
-            document.getElementById('redirectButton').addEventListener('click', function () {
-                // Redirect to a different site
-                window.location.href = 'https://example.com'; // Change the URL to the desired site
             });
         });
     </script>
 {% endblock %}
-
-
-
