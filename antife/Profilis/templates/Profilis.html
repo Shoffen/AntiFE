@@ -1,11 +1,13 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block title %}
     Profilis
 {% endblock %}
 {% load static %} 
 
 {% block content %}
+
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/errors.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'styles/profile.css' %}">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h1>Profile Information</h1>
@@ -101,16 +103,24 @@
         <button type="submit" class="btn btn-primary">Išsaugoti</button>
     </form>
 
-    <!-- JavaScript to handle toggling edit mode -->
     <script>
         document.getElementById("editProfileBtn").addEventListener("click", function() {
             // Toggle visibility of the editing form
             var editProfileForm = document.getElementById("editProfileForm");
             editProfileForm.style.display = editProfileForm.style.display === "none" ? "block" : "none";
-
+    
             // Toggle visibility of the profile information container
             var profileInfoContainer = document.getElementById("profileInfoContainer");
             profileInfoContainer.style.display = profileInfoContainer.style.display === "none" ? "block" : "none";
+    
+            // Set the value of the date input field to the current gimimo_Data
+            var gimimo_Data = "{{ gimimo_Data }}";  
+            var birthdayInput = document.getElementsByName("birthday")[0];
+            // Check if gimimo_Data is a valid date string
+            if (gimimo_Data && gimimo_Data !== 'None') {
+                birthdayInput.value = gimimo_Data;
+            }
         });
     </script>
+    
 {% endblock %}
