@@ -92,7 +92,7 @@ def save_profile_changes(request):
         if pavarde:
             naudotojas.pavarde = pavarde
         if telefonas:
-            if not re.match(r"\+370\d{8}", telefonas):
+            if not re.match(r"\+370\d{8}$", telefonas):
                 error_messages.append('Neteisingai įvestas telefono numeris. Įveskite per naują')
             else:
                 naudotojas.telefonas = telefonas
