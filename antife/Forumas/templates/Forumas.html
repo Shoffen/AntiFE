@@ -17,7 +17,8 @@
             </div>
             <div class="form-group">
                 <label for="post_text">Text:</label>
-                <textarea class="form-control" id="post_text" name="text" rows="5" required></textarea>
+                <div id="editor" style="height: 300px;"></div> <!-- This div will be replaced by Quill.js -->
+                <input type="hidden" name="text" id="hidden_input"> <!-- Hidden input to store Quill's HTML content -->
             </div>
             <button type="submit" class="btn btn-primary">Create Topic</button>
         </form>
@@ -34,10 +35,11 @@
                                 <h5 class="card-title" onclick="togglePost('{{ topic.id }}')" title="Noredami pamatyti tekstą spustelekite cia">
                                     {{ topic.pavadinimas }}
                                 </h5>
+                                <button class="btn btn-sm btn-outline-primary float-right" onclick="editPost('{{ topic.id }}')">Edit</button>
                                 <div id="post_{{ topic.id }}" style="display: none;" class="styled-box">
-                                    <ul>
+                                    <ul class="no-dot">
                                         {% for irasas in topic.irasai_set.all reversed %}
-                                            <li>{{ irasas.tekstas }}</li>
+                                            <li>{{ irasas.tekstas|safe }}</li> <!-- Use the safe filter here -->
                                         {% endfor %}
                                     </ul>
                                 </div>
@@ -56,7 +58,37 @@
         {% endif %}
     </div>
 
+    <style>
+        /* Remove the margin */
+        .styled-box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            /* Remove the margin */
+            margin: 0; 
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        /* Remove the bullet point */
+        .no-dot {
+            list-style-type: none;
+            padding: 0;
+        }
+    </style>
+
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+
     <script>
+        var quill = new Quill('#editor', {
+            theme: 'snow'
+        });
+
+        document.querySelector('form').onsubmit = function() {
+            var editorContent = document.querySelector('.ql-editor').innerHTML;
+            document.getElementById('hidden_input').value = editorContent;
+        };
+        
         function togglePost(topicId) {
             var post = document.getElementById('post_' + topicId);
             if (post.style.display === 'none') {
@@ -65,15 +97,11 @@
                 post.style.display = 'none';
             }
         }
-    </script>
 
-    <style>
-        .styled-box {
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin-top: 10px;
-            border-radius: 5px;
-            background-color: #f9f9f9;
+        function editPost(topicId) {
+            // Add your code to handle editing here
+            // For example, you can redirect the user to an edit page or show a modal for editing
+            console.log('Edit button clicked for topic:', topicId);
         }
-    </style>
+    </script>
 {% endblock %}
