@@ -17,51 +17,51 @@
     <div class="profile-info" id="profileInfoContainer">
         <div class="profile-info-item">
             {% if user_id %}
-                <p>User ID: {{ user_id }}</p>
+                <p>Unikalus numeris: {{ user_id }}</p>
             {% else %}
-                <p>User ID not available</p>
+                <p>Unikalus numeris nepasiekiamas</p>
             {% endif %}
         </div>
         <div class="profile-info-item">
             {% if username %}
-                <p>Username: {{ username }}</p>
+                <p>Slapyvardis: {{ username }}</p>
             {% else %}
-                <p>Username not available</p>
+                <p>Slapyvardis nepasiekiamas</p>
             {% endif %}
         </div>
         <div class="profile-info-item">
             {% if vardas %}
                 <p>Vardas: {{ vardas }}</p>
             {% else %}
-                <p>Vardas not available</p>
+                <p>Vardas nepasiekiamas</p>
             {% endif %}
         </div>
         <div class="profile-info-item">
             {% if pavarde %}
                 <p>Pavardė: {{ pavarde }}</p>
             {% else %}
-                <p>Pavarde not available</p>
+                <p>Pavardė nepasiekiama</p>
             {% endif %}
         </div>
         <div class="profile-info-item">
             {% if telefonas %}
                 <p>Telefono numeris: {{ telefonas }}</p>
             {% else %}
-                <p>Telefono numeris not available</p>
+                <p>Telefono numeris nepasiekiamas</p>
             {% endif %}
         </div>
         <div class="profile-info-item">
             {% if gimimo_Data %}
                 <p>Gimimo data: {{ gimimo_Data }}</p>
             {% else %}
-                <p>Gimimo data not available</p>
+                <p>Gimimo data nepasiekiama</p>
             {% endif %}
         </div>
         <div class="profile-info-item">
             {% if el_pastas %}
                 <p>Elektroninis paštas: {{ el_pastas }}</p>
             {% else %}
-                <p>Elektroninis paštas negalimas</p>
+                <p>Elektroninis paštas nepasiekiamas</p>
             {% endif %}
         </div>
     </div>
