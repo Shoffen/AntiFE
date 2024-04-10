@@ -6,6 +6,9 @@
 
 {% block content %}
     <h1>Create Kraujo Tyrimas</h1>
+    {% if chart %}
+        <img src="data:image/png;base64, {{chart|safe}}">
+    {% endif %}
     <form method="post" action="{% url 'kraujo_tyrimai:create_kraujo_tyrimas' %}">
         {% csrf_token %}
         <label for="id_data">Data:</label>
