@@ -1,9 +1,17 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    Krajo tyrimai
+    Kraujo Tyrimai
 {% endblock %}
 
 {% block content %}
-    <h1>This gon be Kraujo Tyrimai</h1>
+    <h1>Create Kraujo Tyrimas</h1>
+    <form method="post" action="{% url 'kraujo_tyrimai:create_kraujo_tyrimas' %}">
+        {% csrf_token %}
+        <label for="id_data">Data:</label>
+        <input type="date" name="data" id="id_data">
+        <label for="id_fenilalaninas">Fenilalaninas:</label>
+        <input type="number" name="fenilalaninas" id="id_fenilalaninas">
+        <input type="submit" value="Submit">
+    </form>
 {% endblock %}
