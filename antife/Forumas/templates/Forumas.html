@@ -7,7 +7,7 @@
 {% block content %}
     <div class="container">
         <h1>Forumas</h1>
-        
+
         <!-- Add form to allow users to create a new topic -->
         <form method="post" action="{% url 'Forumas:create_topic' %}">
             {% csrf_token %}
@@ -22,13 +22,13 @@
             </div>
             <button type="submit" class="btn btn-primary">Sukurti tema</button>
         </form>
-        
+
         <hr>
-        
+
         <!-- Display existing topics -->
         {% if topics %}
             <div class="row">
-                {% for topic in topics reversed %}
+                {% for topic, irasai in topics %}
                     <div class="col-md-8">
                         <div class="card mb-3">
                             <div class="card-body">
@@ -38,16 +38,38 @@
                                 <button class="btn btn-sm btn-outline-primary float-right" onclick="editPost('{{ topic.id }}')">Edit</button>
                                 <div id="post_{{ topic.id }}" style="display: none;" class="styled-box">
                                     <ul class="no-dot">
-                                        {% for irasas in topic.irasai_set.all reversed %}
+                                        {% for irasas in irasai %}
                                             <li>{{ irasas.tekstas|safe }}</li> <!-- Use the safe filter here -->
                                         {% endfor %}
                                     </ul>
                                 </div>
-                                <p>
-                                    <small class="text-muted">
-                                        Posted by {{ username }} on {{ topic.irasai_set.last.data }}
-                                    </small>
-                                </p>
+                                <button class="btn btn-sm btn-outline-primary float-right" onclick="toggleComments('{{ topic.id }}')">Komentarai</button> <!-- Toggle button for comments -->
+                                <button class="btn btn-sm btn-outline-primary float-right" onclick="toggleAllComments('{{ topic.id }}')">Peržiūrėti komentarus</button> <!-- Button for displaying all comments -->
+                                <div id="comments_{{ topic.id }}" style="display: none;"> <!-- Comments section -->
+                                    <!-- Comment form -->
+                                    <form method="post" action="{% url 'Forumas:add_comment' irasai.first.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="irasas_id" value="{{ irasai.first.id }}">
+                                        <div class="form-group">
+                                            <label for="comment_text">Komentaras:</label>
+                                            <textarea class="form-control" id="comment_text_{{ topic.id }}" name="text" rows="3" required></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Pateikti</button>
+                                    </form>
+                                    <!-- Display existing comments -->
+                                    <div id="existing_comments_{{ topic.id }}" style="display: none;">
+                                        {% for irasas in irasai %}
+                                            {% for comment in irasas.komentarai_set.all %}
+                                                <div class="comment-wrapper">
+                                                    <div class="comment">
+                                                        <p>{{ comment.tekstas }}</p>
+                                                        <p><small>Paskelbė {{ comment.fk_Naudotojasid_Naudotojas.vardas }} {{ comment.fk_Naudotojasid_Naudotojas.pavarde }} {{ comment.data }}</small></p>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -64,7 +86,7 @@
             border: 1px solid #ccc;
             padding: 10px;
             /* Remove the margin */
-            margin: 0; 
+            margin: 0;
             border-radius: 5px;
             background-color: #f9f9f9;
         }
@@ -73,6 +95,18 @@
         .no-dot {
             list-style-type: none;
             padding: 0;
+        }
+
+        /* Style for comments */
+        .comment-wrapper {
+            margin-bottom: 20px; /* Add some bottom margin to separate comments */
+        }
+
+        .comment {
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f0f0f0;
         }
     </style>
 
@@ -88,7 +122,7 @@
             var editorContent = document.querySelector('.ql-editor').innerHTML;
             document.getElementById('hidden_input').value = editorContent;
         };
-        
+
         function togglePost(topicId) {
             var post = document.getElementById('post_' + topicId);
             if (post.style.display === 'none') {
@@ -100,8 +134,23 @@
 
         function editPost(topicId) {
             // Add your code to handle editing here
-            // For example, you can redirect the user to an edit page or show a modal for editing
             console.log('Edit button clicked for topic:', topicId);
+        }
+
+        function toggleComments(topicId) {
+            var comments = document.getElementById('comments_' + topicId);
+            if (comments.style.display === 'none') {
+                comments.style.display = 'block';
+            }
+        }
+
+        function toggleAllComments(topicId) {
+            var allComments = document.getElementById('existing_comments_' + topicId);
+            if (allComments.style.display === 'none' || allComments.style.display === '') {
+                allComments.style.display = 'block';
+            } else {
+                allComments.style.display = 'none';
+            }
         }
     </script>
 {% endblock %}
