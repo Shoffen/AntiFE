@@ -1,11 +1,23 @@
 {% extends 'base.html' %}
+{% load static %} 
 
 {% block title %}
     Kraujo Tyrimai
 {% endblock %}
 
 {% block content %}
+    
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/errors.css' %}">
     <h1>Create Kraujo Tyrimas</h1>
+    {% if messages %}
+        <div class="error-container">
+            {% for message in messages %}
+                <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %}" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
     {% if chart %}
         <img src="data:image/png;base64, {{chart|safe}}">
     {% endif %}
