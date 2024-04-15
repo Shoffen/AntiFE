@@ -2,6 +2,10 @@ from django.shortcuts import render, redirect
 from homepage.models import Kraujo_tyrimai, Naudotojai
 from django.contrib.auth.decorators import login_required
 from .utils import get_plot
+from django.db.models import Q
+from django.contrib import messages
+
+
 
 @login_required
 def create_kraujo_tyrimas(request):
@@ -10,10 +14,22 @@ def create_kraujo_tyrimas(request):
         fenilalaninas = request.POST.get('fenilalaninas')
         # Fetch the corresponding Naudotojai instance
         naudotojai_instance = Naudotojai.objects.get(user=request.user)
-        # Create Kraujo Tyrimas for the current authenticated user
-        Kraujo_tyrimai.objects.create(data=data, fenilalaninas=fenilalaninas, fk_Naudotojasid_Naudotojas=naudotojai_instance)
-        return render(request, 'Kraujotyr.html')  # Redirect to some success page
-    return render(request, 'kraujo_tyrymai.html')
+        # Check if a Kraujotyr already exists for the given date and user
+        existing_kraujotyr = Kraujo_tyrimai.objects.filter(Q(data=data) & Q(fk_Naudotojasid_Naudotojas=naudotojai_instance)).exists()
+        if existing_kraujotyr:
+            # If a Kraujotyr already exists for the given date and user, show an error message
+            messages.error(request, 'Kraujo tyrimas su šia data jau egzistuoja.')
+        else:
+            # If a Kraujotyr for the given date and user doesn't exist, create a new one
+            Kraujo_tyrimai.objects.create(data=data, fenilalaninas=fenilalaninas, fk_Naudotojasid_Naudotojas=naudotojai_instance)
+            # Add success message
+            messages.success(request, 'Kraujo tyrimas sėkmingai pridėtas.')
+            # Redirect to the 'kraujotyrview' view after creating the Kraujo Tyrimas
+            return redirect('kraujo_tyrimai:kraujotyrview')
+    # If the request method is not POST or if there was an error, render the 'kraujotyrview' template
+    return kraujotyrview(request)
+
+
 
 
 import matplotlib.pyplot as plt
