@@ -3,14 +3,20 @@ from django.contrib.auth.models import User
 
 class Product(models.Model):
     name = models.CharField(max_length=255)
-    calories = models.DecimalField(max_digits=5, decimal_places=2)
+    calories = models.DecimalField(max_digits=6, decimal_places=2)
     total_fat = models.DecimalField(max_digits=5, decimal_places=2)
     fiber = models.DecimalField(max_digits=5, decimal_places=2)
     protein = models.DecimalField(max_digits=5, decimal_places=2)
-    phenylalanine = models.DecimalField(max_digits=5, decimal_places=3)
+    phenylalanine = models.DecimalField(max_digits=6, decimal_places=2)
+    measure = models.CharField(max_length=255)
+    homePhenylalanine = models.DecimalField(max_digits=6, decimal_places=2)
+    homeWeight = models.DecimalField(max_digits=5, decimal_places=2)
+    category = models.CharField(max_length=255)
+    color = models.CharField(max_length=50)
 
     def __str__(self):
         return self.name
+
 
 class Naudotojai(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, default=None)
