@@ -1,5 +1,7 @@
 from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
-from homepage.models import Product, Receptai, Naudotojai, Valgymai, Valgiarasciai, Recepto_produktai
+from homepage.models import Product, Receptai, Naudotojai, Valgymai, Valgiarasciai, Recepto_produktai, Naudotojo_receptai
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.db.models import Q, F
 from django.contrib.auth import authenticate
 from django.contrib import messages
@@ -28,6 +30,26 @@ def receptai_list(request):
     receptai_list = Receptai.objects.all()
     return render(request, 'Receptai.html', {'receptai_list': receptai_list})
 
+@login_required
+def manoreceptai_list(request):
+    # Get the current user
+    current_user = request.user
+
+    try:
+        # Get the Naudotojai instance associated with the current user
+        naudotojas = Naudotojai.objects.get(user=current_user)
+        # Get all recipe IDs associated with the current user from Naudotojo_Receptai table
+        user_recipe_ids = Naudotojo_receptai.objects.filter(fk_Naudotojasid_Naudotojas=naudotojas).values_list('fk_Receptasid_Receptas', flat=True)
+        # Fetch the recipes from Receptai model using the retrieved recipe IDs
+        receptai_list = Receptai.objects.filter(id__in=user_recipe_ids)
+    except Naudotojai.DoesNotExist:
+        # If the Naudotojai instance for the current user does not exist, return an empty list of recipes
+        receptai_list = []
+
+    return render(request, 'ManoReceptai.html', {'manoreceptai_list': receptai_list})
+
+
+@login_required
 #dovydo recepto kurimas
 def create_recipe_view(request):
     if request.method == 'POST':
@@ -36,7 +58,6 @@ def create_recipe_view(request):
         recipe_summary = request.POST.get('recipeSummary')
         ingredient_names = request.POST.getlist('ingredient[]')
         ingredient_amounts = request.POST.getlist('amount[]')
-        
 
         # Check if all required fields are present
         if not (recipe_name and recipe_summary and ingredient_names and ingredient_amounts):
@@ -47,12 +68,16 @@ def create_recipe_view(request):
             recipe = Receptai.objects.create(
                 pavadinimas=recipe_name,
                 aprasas=recipe_summary,
-                
             )
             
             # Check if the recipe was successfully created
             if not recipe:
                 return JsonResponse({'error': 'Failed to create recipe.'}, status=500)
+            
+            # Associate the user's ID with the created recipe
+            naudotojas = Naudotojai.objects.get(user=request.user)
+            Naudotojo_receptai.objects.create(fk_Naudotojasid_Naudotojas=naudotojas, fk_Receptasid_Receptas=recipe)
+            
             total_phe = 0
             total_calories = 0  # Initialize total calories
             # Create ingredient objects for the recipe
@@ -65,16 +90,12 @@ def create_recipe_view(request):
                 total_calories += ingredient_calories
                 ingredient_phe = ingredient_amount_decimal * (product.phenylalanine / Decimal(100))
                 total_phe += ingredient_phe
-                print(total_calories)
-                print(ingredient_amount)
                 Recepto_produktai.objects.create(
                     fk_Receptasid_Receptas=recipe,
                     fk_Produktasid_Produktas=product,
                     amount=ingredient_amount_decimal
                 )
                 
-            
-            
             recipe.kalorijos = total_calories
             recipe.fenilalaninas = total_phe
             recipe.save()

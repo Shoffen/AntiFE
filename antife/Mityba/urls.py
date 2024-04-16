@@ -13,4 +13,5 @@ urlpatterns = [
     path('create_valgymas/', views.create_valgymas, name='create_valgymas'),
     path('create_valgiarastis/', views.create_valgiarastis, name='create_valgiarastis'),
     path('receptai_list/<int:recipe_id>/', views.remove_recipe_view, name='remove_recipe'),
+    path('manoreceptai_list/', views.manoreceptai_list, name='manoreceptai_list'),
 ]

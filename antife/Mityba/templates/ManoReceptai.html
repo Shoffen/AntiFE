@@ -2,7 +2,7 @@
 
 {% block content %}
     <div class="container">
-        <h2>Receptai</h2>
+        <h2>Mano Receptai</h2>
 
         <a href="{% url 'mityba:create_recipe' %}" class="btn btn-primary custom-button">Sukurti naują receptą</a>
 
@@ -12,33 +12,41 @@
                     <th>Pavadinimas</th>
                     <th>Kalorijos</th>
                     <th>Fenilalaninas</th>
-                    
+                    <th>Veiksmai</th>
                 </tr>
             </thead>
             <tbody>
-                {% for receptas in receptai_list %}
-                    <tr>
-                        <td class="name-cell" data-toggle="aprasas-{{ forloop.counter }}" data-ingredientai="ingredientai-{{ forloop.counter }}">{{ receptas.pavadinimas }}</td>
-                        <td>{{ receptas.kalorijos }}</td>
-                        <td>{{ receptas.fenilalaninas }}</td>
-                    </tr>
-                    <tr>
-                        <td colspan="4" id="ingredientai-{{ forloop.counter }}" style="display: none; padding: 10px; background-color: #f2f2f2; border: 1px solid #ddd;">
-                            <h3>Ingredientai</h3>
-                            <ul>
-                                {% for recepto_produktai in receptas.recepto_produktai_set.all %}
-                                    <li>{{ recepto_produktai.fk_Produktasid_Produktas.name }} - {{ recepto_produktai.amount }}</li>
-                                {% endfor %}
-                            </ul>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="4" id="aprasas-{{ forloop.counter }}" style="display: none; padding: 10px; background-color: #f2f2f2; border: 1px solid #ddd;">
-                            <h3>Aprasas</h3>
-                            <p>{{ receptas.aprasas }}</p>
-                        </td>
-                    </tr>
-                    
+                {% for receptas in manoreceptai_list %}
+                    {% if receptas.naudotojo_receptai_set.exists %}
+                        <tr>
+                            <td class="name-cell" data-toggle="aprasas-{{ forloop.counter }}" data-ingredientai="ingredientai-{{ forloop.counter }}">{{ receptas.pavadinimas }}</td>
+                            <td>{{ receptas.kalorijos }}</td>
+                            <td>{{ receptas.fenilalaninas }}</td>
+                            <td>
+                                <div id="remove-button-container-{{ forloop.counter }}">
+                                    {% if user.is_authenticated %}
+                                        <button class="btn btn-danger remove-recipe" data-id="{{ receptas.id }}">X</button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" id="ingredientai-{{ forloop.counter }}" style="display: none; padding: 10px; background-color: #f2f2f2; border: 1px solid #ddd;">
+                                <h3>Ingredientai</h3>
+                                <ul>
+                                    {% for recepto_produktai in receptas.recepto_produktai_set.all %}
+                                        <li>{{ recepto_produktai.fk_Produktasid_Produktas.name }} - {{ recepto_produktai.amount }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" id="aprasas-{{ forloop.counter }}" style="display: none; padding: 10px; background-color: #f2f2f2; border: 1px solid #ddd;">
+                                <h3>Aprasas</h3>
+                                <p>{{ receptas.aprasas }}</p>
+                            </td>
+                        </tr>
+                    {% endif %}
                 {% endfor %}
             </tbody>
         </table>
