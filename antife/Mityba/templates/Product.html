@@ -107,7 +107,7 @@
       <tbody>
         {% for product in products %}
           <tr>
-            <td class="{% if product.phenylalanine >= 0.4 %}high{% elif product.phenylalanine >= 0.1 %}medium{% else %}low{% endif %}">
+            <td class="{% if product.color == 'Raudona' %}high{% elif product.color == 'Geltona' %}medium{% else %}low{% endif %}">
               {{ product.name }}
             </td>
             <td>{{ product.calories }}</td>
