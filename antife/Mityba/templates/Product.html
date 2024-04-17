@@ -6,6 +6,8 @@
 {% endblock %}
 
 {% block content %}
+<head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <style>
     body {
       font-family: 'Arial', sans-serif;
@@ -85,10 +87,29 @@
     }
   </style>
 
+</head>
+
   <div class="container">
     <h1 class="blue-text">Produktų maistingumo peržiūra</h1>
 
     <form action="" method="GET" class="search-form">
+      <select name="category">
+        <option value="">Kategorijos</option>
+        <option value="Amino rūgštys">Amino rūgštys</option>
+        <option value="Maisto produktai su sumažintu baltymų kiekiu">Maisto produktai su sumažintu baltymų kiekiu</option>
+        <option value="Kompensuojami produktai">Kompensuojami produktai</option>
+        <option value="Aliejai Riebalai">Aliejai Riebalai</option>
+        <option value="Cukrus Cukraus produktai Medus">Cukrus Cukraus produktai Medus</option>
+        <option value="Daržovė">Daržovė</option>
+        <option value="Grūdiniai">Grūdiniai</option>
+        <option value="Kiti maisto produktai">Kiti maisto produktai</option>
+        <option value="Padažas">Padažas</option>
+        <option value="Pienas ir jo produktai">Pienas ir jo produktai</option>
+        <option value="Riešutai Sėklos">Riešutai Sėklos</option>
+        <option value="Vaisiai">Vaisiai</option>
+        <option value="Žolelės ir prieskoniai">Žolelės ir prieskoniai</option>
+        <option value="Mėsa Paukštiena Žuvis Kiaušiniai">Mėsa Paukštiena Žuvis Kiaušiniai</option>
+      </select>
       <input type="text" name="query" class="search-input" placeholder="Ieškoti pagal produkto vardą">
       <button type="submit" class="search-button">Ieškoti</button>
     </form>

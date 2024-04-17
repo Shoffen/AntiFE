@@ -13,16 +13,16 @@ import json
 def valgiarastis(request):
     return render(request, 'valgiarastis.html')
 
-def valgymas(request):
-    return render(request, 'valgymas.html')
+def product(request): 
+  query = request.GET.get('query')
+  category = request.GET.get('category')
 
-def product(request):
-    query = request.GET.get('query')
-    if query:
-        products = Product.objects.filter(Q(name__icontains=query))
-    else:
-        products = Product.objects.all()
-    return render(request, 'Product.html', {'products': products})
+  products = Product.objects.all()
+  if query:
+    products = products.filter(Q(name__icontains=query))
+  if category:
+    products = products.filter(category=category)
+  return render(request, 'Product.html', {'products': products})
 
 def receptai_list(request):
     receptai_list = Receptai.objects.all()
@@ -123,18 +123,38 @@ def create_valgiarastis(request):
                 data=selected_date,
                 fk_Naudotojasid_Naudotojas=naudotojas
             )
+            tipai = ["Pusryčiai", "Pietūs", "Vakarienė", "Papildomi"]
+            for tipas in tipai:
+                Valgymai.objects.create(
+                    tipas=tipas,
+                    fk_Valgiarastisid_Valgiarastis=Valgiarastis
+                )
             return JsonResponse({'status': 'success'})
     else:
         return render(request, 'valgiarastis.html')
 
-def create_valgymas(request):
-    if request.method == 'POST':
-        form = ValgymasForm(request.POST)
-        if form.is_valid():
-            valgymas = form.save(commit=False)
-            valgymas.tipas = 'pusryciai'
-            valgymas.save()
-            return redirect('valgymas_detail', pk=valgymas.pk)
+def valgymai_list(request):
+    selected_date = request.GET.get('selectedDate')
+    naudotojas = Naudotojai.objects.get(user=request.user)
+    print("Selected date:", selected_date)
+
+    if selected_date:
+        valgymai_list = Valgymai.objects.filter(
+            fk_Valgiarastisid_Valgiarastis__data=selected_date,
+            fk_Valgiarastisid_Valgiarastis__fk_Naudotojasid_Naudotojas=naudotojas
+        ).prefetch_related('valgymo_receptas_set').prefetch_related('valgomas_produktas_set')
     else:
-        form = ValgymasForm()
-    return render(request, 'valgymas.html', {'form': form})
+        return render(request, 'valgiarastis.html')
+    
+    valgymai_list.total_fenilalaninas = 0
+    for valgymas in valgymai_list:
+        for valgomasreceptas in valgymas.valgymo_receptas_set.all():
+            valgomasreceptas.total_fenilalaninas = round(valgomasreceptas.kiekis /100 * Decimal(valgomasreceptas.fk_Receptasid_Receptas.fenilalaninas) , 1)
+            valgymai_list.total_fenilalaninas+=valgomasreceptas.total_fenilalaninas
+        for valgomasproduktas in valgymas.valgomas_produktas_set.all():
+            valgomasproduktas.total_fenilalaninas = round(valgomasproduktas.kiekis /100 * Decimal(valgomasproduktas.fk_Produktasid_Produktas.phenylalanine) , 1)
+            valgymai_list.total_fenilalaninas+=valgomasproduktas.total_fenilalaninas
+
+
+    context = {'valgymai_list': valgymai_list}
+    return render(request, 'valgymas.html', context)

@@ -71,10 +71,12 @@ class Valgymai(models.Model):
 class Valgomas_produktas(models.Model):
     fk_Valgymasid_Valgymas = models.ForeignKey(Valgymai, on_delete=models.CASCADE)
     fk_Produktasid_Produktas = models.ForeignKey(Product, on_delete=models.CASCADE)
+    kiekis = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
 
 class Valgymo_receptas(models.Model):
     fk_Receptasid_Receptas = models.ForeignKey(Receptai, on_delete=models.CASCADE)
     fk_Valgymasid_Valgymas = models.ForeignKey(Valgymai, on_delete=models.CASCADE)
+    kiekis = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
 
 class Recepto_produktai(models.Model):
     fk_Receptasid_Receptas = models.ForeignKey(Receptai, on_delete=models.CASCADE)
