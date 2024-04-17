@@ -1,79 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>
-    {% block title %}
-      Django App
-    {% endblock %}
-  </title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-  <style>
-    /* Custom Button Style */
-    button.custom-button {
-      background-color: #007bff; /* Blue */
-      border: none;
-      color: white;
-      padding: 10px 20px;
-      text-decoration: none;
-      display: inline-block;
-      font-size: 16px;
-      margin: 4px 2px;
-      cursor: pointer;
-    }
-    
-    /* Hover effect */
-    button.custom-button:hover {
-      background-color: #0056b3; /* Darker Blue */
-    }
-  </style>
-</head>
-<body>
-  {% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">
-            {{ message }}
+{% extends "base.html" %} {% block title %} Home Page {%endblock%}
+{% block content %}
+{% if messages %}
+        <div class="error-container">
+            {% for message in messages %}
+                <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %}" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
         </div>
-    {% endfor %}
 {% endif %}
-
-  <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="#">My Django App</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav mr-auto">
-        <li class="nav-item active">
-          <a class="nav-link" href="{% url 'home' %}">Home</a>
-        </li>
-        <!-- Mityba dropdown menu with Produktai and Receptai options -->
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="mitybaDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            Mityba
-          </a>
-          <div class="dropdown-menu" aria-labelledby="mitybaDropdown">
-            <a class="dropdown-item" href="/product">Produktai</a>
-            <a class="dropdown-item" href="/receptai">Receptai</a>
-          </div>
-        </li>
-      </ul>
-      <button type="button" class="btn btn-primary custom-button" onclick="logoff()">Atsijungti</button>
-    </div>
-  </nav>
-  <div class="container">{% block content %} {% endblock %}</div>
-  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
-  <script>
-    function logoff() {
-        // Redirect to the login page
-        window.location.href = '/';
+<style> 
+    h1 {
+      font-size: 4rem;
+      font-weight: bold;
+      background: linear-gradient(to right, #ff9966, #ff5e62);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      transition: all 0.5s ease;
     }
-</script>
   
-  
-  </script>
-</body>
-</html>
+    h1:hover {
+      transform: rotate(-2deg);
+    }
+ </style>   
+<h1 style="text-align: center;">ANTIFE HOME</h1>
+<h2 style="text-align: center;">An interactive diet assistant for your daily needs</h2>
+<p style="text-align: center"> this is the home page </p>
+{%endblock%}

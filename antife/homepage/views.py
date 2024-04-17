@@ -87,10 +87,9 @@ def register(request):
 
 
 
-from django.contrib.auth import authenticate, login as django_login
-from django.shortcuts import render, redirect
 from django.contrib import messages
-from .models import Naudotojai
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login as django_login
 
 def login(request):
     if request.method == 'POST':
@@ -102,11 +101,12 @@ def login(request):
         if user is not None and user.is_active:
             django_login(request, user)
             messages.success(request, f"Sėkmingai prisijungėte! Sveiki, {username}")
-            return render(request, 'base.html')  # Redirect to the base logged page
+            return render(request, 'baseLogged.html')  # Redirect to the main forum page
         else:
             messages.error(request, "Neteisingi prisijungimo duomenys. Bandyk dar kartą.")
     
     return render(request, 'login.html')
+
 
 
 
