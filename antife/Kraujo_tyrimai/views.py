@@ -59,11 +59,15 @@ def create_kraujo_tyrimas(request):
 
 
 
-import matplotlib.pyplot as plt
+@login_required
 def kraujotyrview(request):
     # Filter Kraujo_tyrimai instances by the current authenticated user
     kraujo_tyrimai_qs = Kraujo_tyrimai.objects.filter(fk_Naudotojasid_Naudotojas__user=request.user)
     
+    if not kraujo_tyrimai_qs:
+        # If there are no kraujo tyrimai, render the template without the chart
+        return render(request, 'Kraujotyr.html')
+
     # Extract x (dates) and y (fenilalaninas) data
     x = [kraujo_tyrimas.data for kraujo_tyrimas in kraujo_tyrimai_qs]
     y = [kraujo_tyrimas.fenilalaninas for kraujo_tyrimas in kraujo_tyrimai_qs]
@@ -74,6 +78,10 @@ def kraujotyrview(request):
     # Sort the data points based on dates
     sorted_data_points = sorted(data_points, key=lambda tup: tup[0])
     
+    if not sorted_data_points:
+        # If there are no data points, render the template without the chart
+        return render(request, 'Kraujotyr.html')
+
     # Unzip sorted data points into separate lists
     sorted_dates, sorted_phenylalanine = zip(*sorted_data_points)
     
