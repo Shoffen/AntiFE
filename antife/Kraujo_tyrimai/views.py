@@ -4,8 +4,8 @@ from django.contrib.auth.decorators import login_required
 from .utils import get_plot
 from django.db.models import Q
 from django.contrib import messages
-
-
+from django.utils import timezone
+import datetime
 
 @login_required
 def create_kraujo_tyrimas(request):
@@ -14,6 +14,15 @@ def create_kraujo_tyrimas(request):
         fenilalaninas = request.POST.get('fenilalaninas')
         # Fetch the corresponding Naudotojai instance
         naudotojai_instance = Naudotojai.objects.get(user=request.user)
+        
+        # Validate if the selected date is not exceeded over today's date
+        selected_date = datetime.datetime.strptime(data, '%Y-%m-%d').date()
+        today = timezone.now().date()
+        if selected_date > today:
+            # If the selected date is greater than today's date, display an error message
+            messages.error(request, 'Pasirinkta negalima data.')
+            return redirect('kraujo_tyrimai:kraujotyrview')
+        
         # Check if a Kraujotyr already exists for the given date and user
         existing_kraujotyr = Kraujo_tyrimai.objects.filter(Q(data=data) & Q(fk_Naudotojasid_Naudotojas=naudotojai_instance)).exists()
         if existing_kraujotyr:
@@ -38,29 +47,23 @@ def kraujotyrview(request):
     # Filter Kraujo_tyrimai instances by the current authenticated user
     kraujo_tyrimai_qs = Kraujo_tyrimai.objects.filter(fk_Naudotojasid_Naudotojas__user=request.user)
     
-    # Extract unique dates and sort them
-    unique_dates = sorted(set(kraujo_tyrimai_qs.values_list('data', flat=True)))
-
-    # Extract x and y values only for the current user's Kraujo_tyrimai instances
+    # Extract x (dates) and y (fenilalaninas) data
     x = [kraujo_tyrimas.data for kraujo_tyrimas in kraujo_tyrimai_qs]
     y = [kraujo_tyrimas.fenilalaninas for kraujo_tyrimas in kraujo_tyrimai_qs]
-
-    # Sort the data based on x values
-    sorted_indices = sorted(range(len(x)), key=lambda k: x[k])
-    x_sorted = [x[i] for i in sorted_indices]
-    y_sorted = [y[i] for i in sorted_indices]
-
+    
+    # Combine dates and phenylalanine values into tuples
+    data_points = list(zip(x, y))
+    
+    # Sort the data points based on dates
+    sorted_data_points = sorted(data_points, key=lambda tup: tup[0])
+    
+    # Unzip sorted data points into separate lists
+    sorted_dates, sorted_phenylalanine = zip(*sorted_data_points)
+    
     # Plot the graph
-    chart = get_plot(x_sorted, y_sorted)
-
-    # Set x-axis ticks to only include unique dates
-    plt.xticks(unique_dates, rotation=45, ha='right')
+    chart = get_plot(range(len(sorted_dates)), sorted_phenylalanine, sorted_dates)
 
     return render(request, 'Kraujotyr.html', {'chart': chart})
-
-
-
-
 
 
 
