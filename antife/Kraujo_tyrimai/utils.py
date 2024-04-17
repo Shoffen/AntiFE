@@ -24,11 +24,12 @@ def get_plot(x, y, dates):
     plt.xlabel('Data')
     plt.ylabel('Fenilalaninas µmol/l')
     
+    plt.xticks(rotation=45, ha='right')  # Set ticks with the calculated interval
     # Customize y-axis ticks to range from 0 to 900 with increments of 100
     plt.yticks(np.arange(0, 900, 100))
     
     # Set x-axis tick labels to the corresponding dates
-    plt.xticks(rotation=45, ha='right')
+   
     plt.gca().set_xticks(np.linspace(0, len(x) - 1, len(dates)))
     plt.gca().set_xticklabels(dates)
     
@@ -37,6 +38,9 @@ def get_plot(x, y, dates):
     
     # Set y-axis limits explicitly
     plt.ylim(0, 900)
+    
+    # Adjust figure margins
+    plt.subplots_adjust(bottom=0.2)  # Adjust bottom margin to make room for rotated labels
 
     # Save the plot to a buffer
     buffer = BytesIO()
