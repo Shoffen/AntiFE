@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import base64
 from io import BytesIO
+import numpy as np
 
 def get_graph():
     buffer = BytesIO()
@@ -12,11 +13,7 @@ def get_graph():
     buffer.close()
     return graph
 
-
-
-
-
-def get_plot(x, y):
+def get_plot(x, y, dates):
     plt.switch_backend('AGG')
     plt.figure(figsize=(10, 5))
     plt.title('Kraujo tyrimai')
@@ -25,13 +22,21 @@ def get_plot(x, y):
     plt.plot(x, y, marker='o', linestyle='-')
     
     plt.xlabel('Data')
-    plt.ylabel('Fenilalaninas')
-    # Set x and y axis ticks to only include data corresponding to your points
-    plt.xticks(x)
-    plt.yticks(y)
+    plt.ylabel('Fenilalaninas µmol/l')
     
+    # Customize y-axis ticks to range from 0 to 900 with increments of 100
+    plt.yticks(np.arange(0, 900, 100))
+    
+    # Set x-axis tick labels to the corresponding dates
     plt.xticks(rotation=45, ha='right')
-    plt.tight_layout()
+    plt.gca().set_xticks(np.linspace(0, len(x) - 1, len(dates)))
+    plt.gca().set_xticklabels(dates)
+    
+    # Add shaded region for the "normal" range
+    plt.axhspan(120, 600, color='green', alpha=0.3)
+    
+    # Set y-axis limits explicitly
+    plt.ylim(0, 900)
 
     # Save the plot to a buffer
     buffer = BytesIO()
@@ -43,4 +48,3 @@ def get_plot(x, y):
     buffer.close()
 
     return graph
-
