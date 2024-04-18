@@ -52,6 +52,10 @@ class Naudotojo_receptai(models.Model):
     fk_Receptasid_Receptas = models.ForeignKey(Receptai, on_delete=models.CASCADE)
     fk_Naudotojasid_Naudotojas = models.ForeignKey(Naudotojai, on_delete=models.CASCADE)
 
+class Megstamiausi_receptai(models.Model):
+    fk_Receptasid_Receptas = models.ForeignKey(Receptai, on_delete=models.CASCADE)
+    fk_Naudotojasid_Naudotojas = models.ForeignKey(Naudotojai, on_delete=models.CASCADE)
+
 class Valgiarasciai(models.Model):
     diena = models.IntegerField()
     bendras_fenilalaninas = models.IntegerField()
