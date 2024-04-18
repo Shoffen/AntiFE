@@ -47,6 +47,10 @@ def profilisview(request):
         'form_submitted': form_submitted,  # Pass form_submitted to the template
     }
     
+    # Clear any existing messages
+    storage = messages.get_messages(request)
+    storage.used = True
+
     return render(request, 'Profilis.html', context)
 
 
@@ -70,7 +74,7 @@ def save_profile_changes(request):
         # Update the user's email
         if el_pastas:
             if not re.match(r"[^@]+@[^@]+\.[^@]+", el_pastas) or not el_pastas.endswith('@gmail.com'):
-                error_messages.append('Neteisingai įvestas elektronins paštas. Įveskite teisingą.')
+                error_messages.append('Neteisingai įvestas elektronins paštas. Įveskite teisingą naudodami @gmail.com')
             else:
                 request.user.email = el_pastas
                 request.user.save()
@@ -93,7 +97,7 @@ def save_profile_changes(request):
             naudotojas.pavarde = pavarde
         if telefonas:
             if not re.match(r"\+370\d{8}$", telefonas):
-                error_messages.append('Neteisingai įvestas telefono numeris. Įveskite per naują')
+                error_messages.append('Neteisingai įvestas telefono numeris.  Įveskite iš naujo naudodami prefiksą +370')
             else:
                 naudotojas.telefonas = telefonas
         if el_pastas:
@@ -113,13 +117,13 @@ def save_profile_changes(request):
                 # Redirect the user to the profile page or any other page as needed
                 return redirect('profilis:profilisview')
             except Exception as e:
-                messages.error(request, f'Klaida atnaujinant profilį: {str(e)}')
-        else:
-            # If there are error messages, add them to the messages framework
-            for message in error_messages:
-                messages.error(request, message)
-            form_submitted = True
+                error_messages.append(f'Klaida atnaujinant profilį: {str(e)}')
+
+        # If there are error messages, add them to the messages framework
+        for message in error_messages:
+            messages.error(request, message)
 
         # Redirect back to the editing page with error messages
         return redirect(reverse('profilis:profilisview'))
+
 

@@ -1,15 +1,91 @@
 {% extends 'base.html' %}
-
-{% block title %}
-    Valgymas
-{% endblock %}
+{% load static %}
 
 {% block content %}
-    <h1>This gon be Valgymas</h1>
-    <a href="{% url 'mityba:create_valgymas' %}" class="btn btn-primary">Add</a>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Create</button>
-    </form>
+<head>
+    <link rel="stylesheet" type="text/css" href="{% static 'styles/valgom.css' %}">
+    <style>
+        /* General Styles */
+body {
+  font-family: sans-serif;
+}
+
+h1, h2, h3 {
+  margin-bottom: 1rem;
+}
+
+/* Container */
+.container {
+  padding: 1rem;
+}
+
+/* Daily Menu List */
+.valgymai-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.valgymas-item {
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 0.5rem;
+}
+
+.valgymas-item h3 {
+  margin-bottom: 0.5rem;
+}
+
+/* Valgymo Receptas List */
+.valgymo-receptas-list,
+.valgomas-produktas-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  margin-left: 1rem;
+}
+
+.valgymo-receptas-item,
+.valgomas-produktas-item {
+  margin-bottom: 0.25rem;
+}
+
+    </style>
+</head>
+
+<body>
+    <h1><span id="selectedDateOutput"></span> dienos valgiaraštis</h1>
+    <div class="container">
+        <h2>Bendras fenilalaninas: {{ valgymai_list.total_fenilalaninas }} mg</h2>
+        <!--<a href="#" id="seeAllValgymaiLink">See All Valgymai</a -->
+        <ul class="valgymai-list">
+            {% for valgymas in valgymai_list %}
+                <li class="valgymas-item">
+                    <h3>{{ valgymas.tipas }}</h3>
+                    <ul class="valgymo-receptas-list">
+                        {% for valgomasreceptas in valgymas.valgymo_receptas_set.all %}
+                            <li class="valgymo-receptas-item">
+                                <span>{{ valgomasreceptas.fk_Receptasid_Receptas.pavadinimas }}</span> ({{ valgomasreceptas.kiekis }} g) - Fenilaninas: {{ valgomasreceptas.total_fenilalaninas }} mg
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <ul class="valgomas-produktas-list">
+                        {% for valgomasproduktas in valgymas.valgomas_produktas_set.all %}
+                            <li class="valgomas-produktas-item">
+                                <span>{{ valgomasproduktas.fk_Produktasid_Produktas.name }}</span> ({{ valgomasproduktas.kiekis }} g) - Fenilaninas: {{ valgomasproduktas.total_fenilalaninas }} mg
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+<script>
+    const selectedDate = localStorage.getItem('selectedDate');
+    document.getElementById('selectedDateOutput').textContent = selectedDate;
+
+    seeAllValgymaiLink.href = `{% url 'mityba:valgymai_list' %}?selectedDate=${selectedDate}`;
+
+</script>
 {% endblock %}
