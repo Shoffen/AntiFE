@@ -1,5 +1,5 @@
 from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
-from homepage.models import Product, Receptai, Naudotojai, Valgymai, Valgiarasciai, Recepto_produktai, Naudotojo_receptai
+from homepage.models import Product, Receptai, Naudotojai, Valgymai, Valgiarasciai, Recepto_produktai, Naudotojo_receptai, Megstamiausi_receptai
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.db.models import Q, F
@@ -10,6 +10,9 @@ from django import forms
 from .forms import ValgymasForm
 from decimal import Decimal
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def valgiarastis(request):
@@ -48,6 +51,31 @@ def manoreceptai_list(request):
 
     return render(request, 'ManoReceptai.html', {'manoreceptai_list': receptai_list})
 
+
+def add_to_favorites(request, recipe_id):
+    if request.method == 'POST':
+        try:
+            # Get the recipe object
+            recipe = Receptai.objects.get(id=recipe_id)
+            # Get the current user
+            current_user = request.user
+            logger.info(f"Current user: {current_user}")
+            logger.info(f"Current user type: {type(current_user)}")
+            # Check if the recipe is already in favorites
+            if Megstamiausi_receptai.objects.filter(fk_Receptasid_Receptas=recipe, fk_Naudotojasid_Naudotojas=current_user).exists():
+                return JsonResponse({'status': 'Recipe already in favorites.'}, status=400)
+            # Add the recipe to favorites
+            favorite_recipe = Megstamiausi_receptai.objects.create(fk_Receptasid_Receptas=recipe, fk_Naudotojasid_Naudotojas=current_user)
+            logger.info(f"Recipe added to favorites: {favorite_recipe}")
+            return JsonResponse({'status': 'Recipe added to favorites successfully.'})
+        except Receptai.DoesNotExist:
+            logger.error(f"Recipe with ID {recipe_id} does not exist.")
+            return JsonResponse({'error': 'Recipe not found.'}, status=404)
+        except Exception as e:
+            logger.exception("An error occurred while adding recipe to favorites.")
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Invalid request method.'}, status=405)
 
 @login_required
 #dovydo recepto kurimas

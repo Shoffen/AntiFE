@@ -12,7 +12,7 @@
                     <th>Pavadinimas</th>
                     <th>Kalorijos</th>
                     <th>Fenilalaninas</th>
-                    
+                    <th>Mėgstamiausi</th>
                 </tr>
             </thead>
             <tbody>
@@ -21,6 +21,7 @@
                         <td class="name-cell" data-toggle="aprasas-{{ forloop.counter }}" data-ingredientai="ingredientai-{{ forloop.counter }}">{{ receptas.pavadinimas }}</td>
                         <td>{{ receptas.kalorijos }}</td>
                         <td>{{ receptas.fenilalaninas }}</td>
+                        <td><button class="favorite-recipe-btn" data-recipe-id="{{ receptas.id }}"><i class="fa fa-star-o"></i></button></td>
                     </tr>
                     <tr>
                         <td colspan="4" id="ingredientai-{{ forloop.counter }}" style="display: none; padding: 10px; background-color: #f2f2f2; border: 1px solid #ddd;">
@@ -65,15 +66,15 @@
                     }
                 });
             });
-    
-            // Event listener for remove recipe buttons
-            const removeRecipeButtons = document.querySelectorAll('.remove-recipe');
-            removeRecipeButtons.forEach(button => {
-                button.addEventListener('click', function () {
-                    const recipeId = this.getAttribute('data-id');
-    
-                    // Send AJAX request to remove the recipe
-                    fetch(`/mityba/receptai_list/${recipeId}/`, {
+
+            // Event listener for adding recipe to favorites
+            const favoriteRecipeBtns = document.querySelectorAll('.favorite-recipe-btn');
+            favoriteRecipeBtns.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const recipeId = this.getAttribute('data-recipe-id');
+
+                    // Send AJAX request to add recipe to favorites
+                    fetch(`/mityba/add_to_favorites/${recipeId}/`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -82,17 +83,16 @@
                     })
                     .then(response => {
                         if (response.ok) {
-                            // If the deletion was successful, remove the corresponding recipe from UI
-                            const recipeRow = this.closest('tr');
-                            recipeRow.remove();
-                            // Display alert for successful removal
-                            alert('Receptas buvo sėkmingai pašalintas');
+                            // If the addition was successful, change the star icon color
+                            this.innerHTML = '<i class="fa fa-star" style="color: blue;"></i>';
+                            // Display alert for successful addition
+                            alert('Receptas pridėtas prie mėgstamiausių');
                         } else {
-                            console.error('Failed to remove recipe');
+                            console.error('Failed to add recipe to favorites');
                         }
                     })
                     .catch(error => {
-                        console.error('Error removing recipe:', error);
+                        console.error('Error adding recipe to favorites:', error);
                     });
                 });
             });
