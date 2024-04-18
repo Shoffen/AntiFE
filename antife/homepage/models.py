@@ -32,6 +32,7 @@ class Receptai(models.Model):
     kalorijos = models.FloatField(default=0.0)
     pavadinimas = models.CharField(max_length=255)
     fenilalaninas = models.FloatField(default=0.0)
+    baltymai = models.FloatField(default=0.0)
     aprasas = models.CharField(max_length=255)
 
 class Forumai(models.Model):
@@ -58,7 +59,8 @@ class Megstamiausi_receptai(models.Model):
 
 class Valgiarasciai(models.Model):
     diena = models.IntegerField()
-    bendras_fenilalaninas = models.IntegerField()
+    bendras_fenilalaninas = models.DecimalField(max_digits=5, decimal_places=2)
+    bendras_baltymas = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
     data = models.DateField()
     fk_Naudotojasid_Naudotojas = models.ForeignKey(Naudotojai, on_delete=models.CASCADE)
 
@@ -70,7 +72,10 @@ class Komentarai(models.Model):
 
 class Valgymai(models.Model):
     tipas = models.CharField(max_length=255)
+    bendras_baltymas = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
+    bendras_fenilalaninas = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
     fk_Valgiarastisid_Valgiarastis = models.ForeignKey(Valgiarasciai, on_delete=models.CASCADE)
+
 
 class Valgomas_produktas(models.Model):
     fk_Valgymasid_Valgymas = models.ForeignKey(Valgymai, on_delete=models.CASCADE)
