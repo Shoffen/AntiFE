@@ -9,6 +9,7 @@ from django.http import JsonResponse
 from django import forms
 from .forms import ValgymasForm
 from decimal import Decimal
+from django.core.serializers import serialize
 import json
 import logging
 
@@ -16,7 +17,11 @@ logger = logging.getLogger(__name__)
 
 
 def valgiarastis(request):
-    return render(request, 'valgiarastis.html')
+  naudotojas = Naudotojai.objects.get(user=request.user)
+  valgiarasciai = Valgiarasciai.objects.filter(fk_Naudotojasid_Naudotojas=naudotojas)
+  valgiarasciai_json = serialize('json', valgiarasciai)
+  context = {'valgiarasciai_json': valgiarasciai_json}
+  return render(request, 'valgiarastis.html', context)
 
 def product(request): 
   query = request.GET.get('query')
@@ -197,7 +202,6 @@ def create_valgiarastis(request):
 def valgymai_list(request):
     selected_date = request.GET.get('selectedDate')
     naudotojas = Naudotojai.objects.get(user=request.user)
-    print("Selected date:", selected_date)
 
     if selected_date:
         valgymai_list = Valgymai.objects.filter(
@@ -208,13 +212,18 @@ def valgymai_list(request):
         return render(request, 'valgiarastis.html')
     
     valgymai_list.total_fenilalaninas = 0
+    valgymai_list.total_baltymas = 0
     for valgymas in valgymai_list:
         for valgomasreceptas in valgymas.valgymo_receptas_set.all():
             valgomasreceptas.total_fenilalaninas = round(valgomasreceptas.kiekis /100 * Decimal(valgomasreceptas.fk_Receptasid_Receptas.fenilalaninas) , 1)
             valgymai_list.total_fenilalaninas+=valgomasreceptas.total_fenilalaninas
+            valgomasreceptas.total_baltymas = round(valgomasreceptas.kiekis /100 * Decimal(valgomasreceptas.fk_Receptasid_Receptas.baltymai) , 1)
+            valgymai_list.total_baltymas+=valgomasreceptas.total_baltymas
         for valgomasproduktas in valgymas.valgomas_produktas_set.all():
             valgomasproduktas.total_fenilalaninas = round(valgomasproduktas.kiekis /100 * Decimal(valgomasproduktas.fk_Produktasid_Produktas.phenylalanine) , 1)
             valgymai_list.total_fenilalaninas+=valgomasproduktas.total_fenilalaninas
+            valgomasproduktas.total_baltymas = round(valgomasproduktas.kiekis /100 * Decimal(valgomasproduktas.fk_Produktasid_Produktas.protein) , 1)
+            valgymai_list.total_baltymas+=valgomasproduktas.total_baltymas
 
 
     context = {'valgymai_list': valgymai_list}
