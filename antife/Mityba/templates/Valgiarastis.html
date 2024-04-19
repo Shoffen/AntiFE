@@ -65,7 +65,7 @@
             textColor: color
         });
         calendar.addEvent({
-            title: balt + Math.round(valgiarastis.fields.bendras_baltymas),
+            title: balt + Math.round(valgiarastis.fields.bendras_baltymas, 1),
             start: valgiarastis.fields.data,
             textColor: color
         });
@@ -108,7 +108,7 @@
         })
         .then((data) => {
             localStorage.setItem('selectedDate', selectedDate);
-            window.location.href = `{% url 'mityba:valgymai_list' %}?selectedDate=${selectedDate}`;
+            window.location.href = `{% url 'mityba:valgymai_open' %}?selectedDate=${selectedDate}`;
         });
     }
 }

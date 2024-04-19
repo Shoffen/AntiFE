@@ -1,5 +1,5 @@
 from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
-from homepage.models import Product, Receptai, Naudotojai, Valgymai, Valgiarasciai, Recepto_produktai, Naudotojo_receptai, Megstamiausi_receptai
+from homepage.models import Product, Receptai, Naudotojai, Valgymai, Valgiarasciai, Recepto_produktai, Naudotojo_receptai, Megstamiausi_receptai, Valgymo_receptas, Valgomas_produktas
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.db.models import Q, F, Case, Value, When
@@ -11,7 +11,8 @@ from .forms import ValgymasForm
 from decimal import Decimal
 from django.core.serializers import serialize
 import json
-import logging
+import logging, webbrowser
+from django.urls import reverse
 
 logger = logging.getLogger(__name__)
 
@@ -198,9 +199,14 @@ def create_valgiarastis(request):
             return JsonResponse({'status': 'success'})
     else:
         return render(request, 'valgiarastis.html')
+    
+def valgymai_open(request):
+    selected_date = request.GET.get('selectedDate')
+    request.session['selectedDate'] = selected_date
+    return valgymai_list(request)
 
 def valgymai_list(request):
-    selected_date = request.GET.get('selectedDate')
+    selected_date = request.session.get('selectedDate') 
     naudotojas = Naudotojai.objects.get(user=request.user)
 
     if selected_date:
@@ -225,6 +231,29 @@ def valgymai_list(request):
             valgomasproduktas.total_baltymas = round(valgomasproduktas.kiekis /100 * Decimal(valgomasproduktas.fk_Produktasid_Produktas.protein) , 1)
             valgymai_list.total_baltymas+=valgomasproduktas.total_baltymas
 
-
-    context = {'valgymai_list': valgymai_list}
+    context = {
+        'valgymai_list': valgymai_list,
+        'all_receptai': serialize('json', Receptai.objects.all()),
+        'all_products': serialize('json', Product.objects.all())
+    }
     return render(request, 'valgymas.html', context)
+
+def delete_valgomasReceptas(request, valgymo_receptas_id):
+    try:
+        valgymo_receptas = Valgymo_receptas.objects.get(id=valgymo_receptas_id)
+    except Valgymo_receptas.DoesNotExist:
+        return valgymai_list(request)
+    if request.method == 'POST':
+        valgymo_receptas.delete()
+        return valgymai_list(request)
+    return valgymai_list(request)
+    
+def delete_valgomasProduktas(request, valgomas_produktas_id):
+    try:
+        valgomas_produktas = Valgomas_produktas.objects.get(id=valgomas_produktas_id)
+    except Valgomas_produktas.DoesNotExist:
+        return valgymai_list(request)
+    if request.method == 'POST':
+        valgomas_produktas.delete()
+        return valgymai_list(request)
+    return valgymai_list(request)
