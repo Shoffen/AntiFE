@@ -134,7 +134,12 @@ h3 {
         </tbody>
       </table>
       {% endif %}
-      <button class="add-new-button">Add New</button> <div class="add-new-form hidden"></div>
+      <button class="add-new-button">Add New</button> 
+      <div class="add-new-form hidden">
+        <input type="text" id="searchInput" placeholder="Paieška">
+        <br>
+        <div id="filteredOptions"></div>
+      </div>
     {% endfor %}
     
   </div>
@@ -143,5 +148,66 @@ h3 {
   const selectedDate = localStorage.getItem('selectedDate');
   document.getElementById('selectedDateOutput').textContent = selectedDate;
 
+  const all_receptai = JSON.parse('{{ all_receptai|escapejs }}');
+  const all_products = JSON.parse('{{ all_products|escapejs }}');
+
+  const addNewButtons = document.querySelectorAll('.add-new-button');
+
+addNewButtons.forEach(button => {
+  button.addEventListener('click', handleAddNewClick);
+});
+
+function handleAddNewClick(event) {
+  const addNewForm = document.querySelector('.add-new-form');
+  addNewForm.style.display = 'block';
+
+  const searchInput = document.getElementById('searchInput');
+  searchInput.value = '';
+
+  const filteredOptions = document.getElementById('filteredOptions');
+  filteredOptions.innerHTML = '';
+
+  const recipeSelect = document.createElement('select');
+  recipeSelect.name = 'selected_recipe';
+
+  all_receptai.forEach(receptas => {
+    const option = document.createElement('option');
+    option.value = receptas;
+    option.text = receptas.fields.pavadinimas;
+    recipeSelect.add(option);
+  });
+  /*
+  cia produktai sudaryta kazkaip reikia is name i pavadinimas pakeist ir galesiu per abu ta pati naudot mes i ta pacia lentele
+  all_products.forEach(receptas => {
+    const option = document.createElement('option');
+    option.value = receptas;
+    option.text = receptas.fields.name;
+    recipeSelect.add(option);
+  });
+  */
+
+  addNewForm.appendChild(searchInput);
+  addNewForm.appendChild(document.createElement('br'));
+
+  filteredOptions.appendChild(recipeSelect);
+
+  searchInput.addEventListener('input', () => {
+    const searchText = searchInput.value.toLowerCase();
+    const filteredReceptai = all_receptai.filter(receptas => receptas.fields.pavadinimas.toLowerCase().includes(searchText));
+
+    updateOptions(recipeSelect, filteredReceptai);
+  });
+}
+
+function updateOptions(selectElement, filteredData) {
+  selectElement.innerHTML = '';
+
+  filteredData.forEach(item => {
+    const option = document.createElement('option');
+    option.value = item;
+    option.text = item.fields.pavadinimas;
+    selectElement.add(option);
+  });
+}
 </script>
 {% endblock %}

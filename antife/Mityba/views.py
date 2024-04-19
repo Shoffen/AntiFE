@@ -231,7 +231,11 @@ def valgymai_list(request):
             valgomasproduktas.total_baltymas = round(valgomasproduktas.kiekis /100 * Decimal(valgomasproduktas.fk_Produktasid_Produktas.protein) , 1)
             valgymai_list.total_baltymas+=valgomasproduktas.total_baltymas
 
-    context = {'valgymai_list': valgymai_list}
+    context = {
+        'valgymai_list': valgymai_list,
+        'all_receptai': serialize('json', Receptai.objects.all()),
+        'all_products': serialize('json', Product.objects.all())
+    }
     return render(request, 'valgymas.html', context)
 
 def delete_valgomasReceptas(request, valgymo_receptas_id):
