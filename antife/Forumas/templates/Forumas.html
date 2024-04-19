@@ -43,8 +43,8 @@
                                         {% endfor %}
                                     </ul>
                                 </div>
-                                <button class="btn btn-sm btn-outline-primary float-right" onclick="toggleComments('{{ topic.id }}')">Komentarai</button> <!-- Toggle button for comments -->
                                 <button class="btn btn-sm btn-outline-primary float-right" onclick="toggleAllComments('{{ topic.id }}')">Peržiūrėti komentarus</button> <!-- Button for displaying all comments -->
+                                <button class="btn btn-sm btn-outline-primary float-right" onclick="toggleComments('{{ topic.id }}')">Pridėti komentarą </button> <!-- Toggle button for comments -->
                                 <div id="comments_{{ topic.id }}" style="display: none;"> <!-- Comments section -->
                                     <!-- Comment form -->
                                     <form method="post" action="{% url 'Forumas:add_comment' irasai.first.id %}">
@@ -60,10 +60,15 @@
                                     <div id="existing_comments_{{ topic.id }}" style="display: none;">
                                         {% for irasas in irasai %}
                                             {% for comment in irasas.komentarai_set.all %}
-                                                <div class="comment-wrapper">
+                                                <div class="comment-wrapper" id="comment_{{ comment.id }}">
                                                     <div class="comment">
                                                         <p>{{ comment.tekstas }}</p>
                                                         <p><small>Paskelbė {{ comment.fk_Naudotojasid_Naudotojas.vardas }} {{ comment.fk_Naudotojasid_Naudotojas.pavarde }} {{ comment.data }}</small></p>
+                                                        {% if request.user == irasas.fk_Naudotojasid_Naudotojas %}
+                                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteComment('{{ comment.id }}')">Delete Comment</button>
+                                                        {% endif %}
+                                                        <button class="btn btn-sm btn-outline-primary" onclick="likeComment('{{ comment.id }}')">Like</button>
+                                                        <span id="likes_count_{{ comment.id }}">0</span> Likes <!-- Span to display the like count -->
                                                     </div>
                                                 </div>
                                             {% endfor %}
@@ -139,8 +144,10 @@
 
         function toggleComments(topicId) {
             var comments = document.getElementById('comments_' + topicId);
-            if (comments.style.display === 'none') {
+            if (comments.style.display === 'none' || comments.style.display === '') {
                 comments.style.display = 'block';
+            } else {
+                comments.style.display = 'none'; // Toggle display style between 'none' and 'block'
             }
         }
 
@@ -151,6 +158,45 @@
             } else {
                 allComments.style.display = 'none';
             }
+        }
+
+        function likeComment(commentId) {
+            fetch('/like-comment/' + commentId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data); // Log the response data for debugging
+                // Update the like count for the comment
+                var likesCountElement = document.getElementById('likes_count_' + commentId);
+                likesCountElement.textContent = data.likes; // Assuming your server returns the updated like count
+            })
+            .catch(error => {
+                console.error('There was a problem with your fetch operation:', error);
+            });
+        }
+
+        function deleteComment(commentId) {
+            fetch('/delete-comment/' + commentId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Remove the comment from the DOM
+                    var commentElement = document.getElementById('comment_' + commentId);
+                    commentElement.parentNode.removeChild(commentElement);
+                }
+                throw new Error('Network response was not ok.');
+            })
+            .catch(error => {
+                console.error('There was a problem with your fetch operation:', error);
+            });
         }
     </script>
 {% endblock %}
