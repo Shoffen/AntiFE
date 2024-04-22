@@ -1,15 +1,213 @@
 {% extends 'base.html' %}
-
-{% block title %}
-    Valgymas
-{% endblock %}
+{% load static %}
 
 {% block content %}
-    <h1>This gon be Valgymas</h1>
-    <a href="{% url 'mityba:create_valgymas' %}" class="btn btn-primary">Add</a>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Create</button>
-    </form>
+<head>
+  <link rel="stylesheet" type="text/css" href="{% static 'styles/valgom.css' %}">
+  <style>
+    /* valgom.css */
+
+/* Style the main heading */
+h1 {
+    font-size: 30px;
+    color: #333; /* Dark gray color */
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Style the container */
+.container {
+    margin-top: 10px;
+}
+
+/* Style the section headings */
+h2 {
+    font-size: 20px;
+    color: #666; /* Medium gray color */
+    margin-bottom: 10px;
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+h3 {
+    font-size: 30px;
+    color: #666; /* Dark gray color */
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Style the table */
+.valgymai-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+/* Style the table headers */
+.valgymai-table th {
+    background-color: #f2f2f2; /* Light gray background */
+    text-align: left;
+    padding: 8px;
+}
+
+/* Style the table cells */
+.valgymai-table td {
+    border: 1px solid #ddd; /* Light gray border */
+    padding: 8px;
+}
+
+/* Style the "Add New" button */
+.add-new-button {
+    background-color: #007bff; /* Blue color */
+    color: #fff; /* White color */
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.add-new-button:hover {
+    background-color: #0056b3; /* Darker blue color on hover */
+}
+
+/* Style the hidden form */
+.hidden {
+    display: none;
+}
+
+.styled-cell {
+  display: inline-block; /* Display as inline-block to remove table layout */
+  border-left: 1px solid black; /* Set left border */
+  border-top: none; /* Disable top border */
+  border-right: none; /* Disable right border */
+  border-bottom: none; /* Disable bottom border */
+  padding: 0; /* Remove padding */
+  background-color: transparent; /* Set background color to transparent */
+} 
+
+  </style>
+</head>
+
+<body>
+  <h1><span id="selectedDateOutput"></span> dienos valgiaraštis</h1>
+  <div class="container">
+    <h2>Bendras fenilalaninas: {{ valgymai_list.total_fenilalaninas }} mg</h2>
+    <h2>Bendras baltymas: {{ valgymai_list.total_baltymas }} g</h2>
+    {% for valgymas in valgymai_list %}
+      <h2>{{ valgymas.tipas }}</h2>
+      {% if valgymas.valgymo_receptas_set.all or valgymas.valgomas_produktas_set.all %}
+      <table class="valgymai-table">
+        <thead>
+          <tr>
+            <th>Patiekalas</th>
+            <th>Kiekis (g)</th>
+            <th>Baltymai (g)</th>
+            <th>Fenilalaninas (mg)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for valgomasreceptas in valgymas.valgymo_receptas_set.all %}
+            <tr>
+              <td>{{ valgomasreceptas.fk_Receptasid_Receptas.pavadinimas }}</td>
+              <td>{{ valgomasreceptas.kiekis }} </td>
+              <td>{{ valgomasreceptas.total_baltymas }} </td>
+              <td>{{ valgomasreceptas.total_fenilalaninas }} </td>
+              <td class="styled-cell"><form action="{% url 'mityba:delete_valgomasReceptas' valgymo_receptas_id=valgomasreceptas.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Delete</button>
+            </form></td>
+            </tr>
+          {% endfor %}
+          {% for valgomasproduktas in valgymas.valgomas_produktas_set.all %}
+            <tr>
+              <td>{{ valgomasproduktas.fk_Produktasid_Produktas.name }}</td>
+              <td>{{ valgomasproduktas.kiekis }} </td>
+              <td>{{ valgomasproduktas.total_baltymas }} </td>
+              <td>{{ valgomasproduktas.total_fenilalaninas }} </td>
+              <td class="styled-cell"><form action="{% url 'mityba:delete_valgomasProduktas' valgomas_produktas_id=valgomasproduktas.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Delete</button>
+            </form></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+      <button class="add-new-button">Add New</button> 
+      <div class="add-new-form hidden">
+        <input type="text" id="searchInput" placeholder="Paieška">
+        <br>
+        <div id="filteredOptions"></div>
+      </div>
+    {% endfor %}
+    
+  </div>
+</body>
+<script>
+  const selectedDate = localStorage.getItem('selectedDate');
+  document.getElementById('selectedDateOutput').textContent = selectedDate;
+
+  const all_receptai = JSON.parse('{{ all_receptai|escapejs }}');
+  const all_products = JSON.parse('{{ all_products|escapejs }}');
+
+  const addNewButtons = document.querySelectorAll('.add-new-button');
+
+addNewButtons.forEach(button => {
+  button.addEventListener('click', handleAddNewClick);
+});
+
+function handleAddNewClick(event) {
+  const addNewForm = document.querySelector('.add-new-form');
+  addNewForm.style.display = 'block';
+
+  const searchInput = document.getElementById('searchInput');
+  searchInput.value = '';
+
+  const filteredOptions = document.getElementById('filteredOptions');
+  filteredOptions.innerHTML = '';
+
+  const recipeSelect = document.createElement('select');
+  recipeSelect.name = 'selected_recipe';
+
+  all_receptai.forEach(receptas => {
+    const option = document.createElement('option');
+    option.value = receptas;
+    option.text = receptas.fields.pavadinimas;
+    recipeSelect.add(option);
+  });
+  /*
+  cia produktai sudaryta kazkaip reikia is name i pavadinimas pakeist ir galesiu per abu ta pati naudot mes i ta pacia lentele
+  all_products.forEach(receptas => {
+    const option = document.createElement('option');
+    option.value = receptas;
+    option.text = receptas.fields.name;
+    recipeSelect.add(option);
+  });
+  */
+
+  addNewForm.appendChild(searchInput);
+  addNewForm.appendChild(document.createElement('br'));
+
+  filteredOptions.appendChild(recipeSelect);
+
+  searchInput.addEventListener('input', () => {
+    const searchText = searchInput.value.toLowerCase();
+    const filteredReceptai = all_receptai.filter(receptas => receptas.fields.pavadinimas.toLowerCase().includes(searchText));
+
+    updateOptions(recipeSelect, filteredReceptai);
+  });
+}
+
+function updateOptions(selectElement, filteredData) {
+  selectElement.innerHTML = '';
+
+  filteredData.forEach(item => {
+    const option = document.createElement('option');
+    option.value = item;
+    option.text = item.fields.pavadinimas;
+    selectElement.add(option);
+  });
+}
+</script>
 {% endblock %}
