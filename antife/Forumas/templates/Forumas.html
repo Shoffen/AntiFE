@@ -35,7 +35,6 @@
                                 <h5 class="card-title" onclick="togglePost('{{ topic.id }}')" title="Noredami pamatyti tekstą spustelekite cia">
                                     {{ topic.pavadinimas }}
                                 </h5>
-                                <button class="btn btn-sm btn-outline-primary float-right" onclick="editPost('{{ topic.id }}')">Edit</button>
                                 <div id="post_{{ topic.id }}" style="display: none;" class="styled-box">
                                     <ul class="no-dot">
                                         {% for irasas in irasai %}
@@ -56,6 +55,8 @@
                                         </div>
                                         <button type="submit" class="btn btn-primary">Pateikti</button>
                                     </form>
+                                </div>
+                                <div>
                                     <!-- Display existing comments -->
                                     <div id="existing_comments_{{ topic.id }}" style="display: none;">
                                         {% for irasas in irasai %}
@@ -64,11 +65,29 @@
                                                     <div class="comment">
                                                         <p>{{ comment.tekstas }}</p>
                                                         <p><small>Paskelbė {{ comment.fk_Naudotojasid_Naudotojas.vardas }} {{ comment.fk_Naudotojasid_Naudotojas.pavarde }} {{ comment.data }}</small></p>
-                                                        {% if request.user == irasas.fk_Naudotojasid_Naudotojas %}
-                                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteComment('{{ comment.id }}')">Delete Comment</button>
-                                                        {% endif %}
-                                                        <button class="btn btn-sm btn-outline-primary" onclick="likeComment('{{ comment.id }}')">Like</button>
-                                                        <span id="likes_count_{{ comment.id }}">0</span> Likes <!-- Span to display the like count -->
+                                                        <!-- Like/unlike button -->
+                                                        <form method="post" action="{% url 'Forumas:like_comment' comment.id %}">
+                                                            {% csrf_token %}
+                                                            {% if request.user.is_authenticated %}
+                                                                {% with request.user.naudotojai_ptr_id as user_id %}
+                                                                    {% if user_id in comment.likes.values_list %}
+                                                                        <!-- Use a filled heart icon for liked -->
+                                                                        <button type="submit" class="like-button" aria-label="Unlike">
+                                                                            <i class="fas fa-heart"></i>
+                                                                        </button>
+                                                                    {% else %}
+                                                                        <!-- Use an empty heart icon for not liked -->
+                                                                        <button type="submit" class="like-button" aria-label="Like">
+                                                                            <i class="far fa-heart"></i>
+                                                                        </button>
+                                                                    {% endif %}
+                                                                {% endwith %}
+                                                            {% else %}
+                                                                <!-- Handle case when user is not authenticated (e.g., display login/signup option) -->
+                                                            {% endif %}
+                                                        </form>
+                                                        <!-- Display count of likes -->
+                                                        <p>Likes: {{ comment.likes.count }}</p>
                                                     </div>
                                                 </div>
                                             {% endfor %}
@@ -85,7 +104,33 @@
         {% endif %}
     </div>
 
+    <!-- Display messages -->
+    {% if messages %}
+        <div class="alert alert-{{ messages.0.tags }}">
+            {{ messages.0 }}
+        </div>
+    {% endif %}
+
     <style>
+        /* CSS for the interactive heart icon */
+        .like-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .like-button:hover .far.fa-heart {
+            color: red; /* Change color on hover */
+        }
+
+        .like-button:hover .fas.fa-heart {
+            color: inherit; /* Maintain color on hover */
+        }
+
+        .like-button:focus {
+            outline: none; /* Remove outline on focus */
+        }
         /* Remove the margin */
         .styled-box {
             border: 1px solid #ccc;
@@ -117,6 +162,7 @@
 
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
 
     <script>
         var quill = new Quill('#editor', {
@@ -137,11 +183,6 @@
             }
         }
 
-        function editPost(topicId) {
-            // Add your code to handle editing here
-            console.log('Edit button clicked for topic:', topicId);
-        }
-
         function toggleComments(topicId) {
             var comments = document.getElementById('comments_' + topicId);
             if (comments.style.display === 'none' || comments.style.display === '') {
@@ -160,43 +201,5 @@
             }
         }
 
-        function likeComment(commentId) {
-            fetch('/like-comment/' + commentId, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data); // Log the response data for debugging
-                // Update the like count for the comment
-                var likesCountElement = document.getElementById('likes_count_' + commentId);
-                likesCountElement.textContent = data.likes; // Assuming your server returns the updated like count
-            })
-            .catch(error => {
-                console.error('There was a problem with your fetch operation:', error);
-            });
-        }
-
-        function deleteComment(commentId) {
-            fetch('/delete-comment/' + commentId, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    // Remove the comment from the DOM
-                    var commentElement = document.getElementById('comment_' + commentId);
-                    commentElement.parentNode.removeChild(commentElement);
-                }
-                throw new Error('Network response was not ok.');
-            })
-            .catch(error => {
-                console.error('There was a problem with your fetch operation:', error);
-            });
-        }
     </script>
 {% endblock %}

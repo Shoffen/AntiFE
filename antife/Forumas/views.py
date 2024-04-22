@@ -1,12 +1,34 @@
 from django.contrib.auth.models import User
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from homepage.models import Forumai, Irasai, Naudotojai, Komentarai
 from datetime import date
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist
+from django.template.loader import render_to_string
+from django.http import JsonResponse
+
+from django.contrib.auth import get_user_model
+
+def like_comment(request, pk):
+    comment = get_object_or_404(Komentarai, pk=pk)
+    
+    if request.user.is_authenticated:
+        user = Naudotojai.objects.get(user=request.user)
+        
+        if user in comment.likes.all():
+            # User has already liked this comment
+            comment.likes.remove(user)
+            messages.info(request, "You have unliked this comment.")
+        else:
+            # User has not yet liked this comment
+            comment.likes.add(user)
+            messages.success(request, "You have liked this comment.")
+            
+    return redirect(request.META.get('HTTP_REFERER', 'forumas:forum'))
+
 
 @login_required
 def add_comment(request, irasas_id):
