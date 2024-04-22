@@ -12,6 +12,8 @@ from django.http import JsonResponse
 
 from django.contrib.auth import get_user_model
 
+from django.contrib import messages
+
 def like_comment(request, pk):
     comment = get_object_or_404(Komentarai, pk=pk)
     
@@ -27,7 +29,9 @@ def like_comment(request, pk):
             comment.likes.add(user)
             messages.success(request, "You have liked this comment.")
             
+    # Redirect back to the previous page with messages
     return redirect(request.META.get('HTTP_REFERER', 'forumas:forum'))
+
 
 
 @login_required
