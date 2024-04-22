@@ -69,6 +69,7 @@ class Komentarai(models.Model):
     data = models.DateField()
     fk_Irasasid_Irasas = models.ForeignKey(Irasai, on_delete=models.CASCADE)
     fk_Naudotojasid_Naudotojas = models.ForeignKey(Naudotojai, on_delete=models.CASCADE)
+    likes = models.ManyToManyField(Naudotojai, related_name='liked_comments', blank=True)
 
 class Valgymai(models.Model):
     tipas = models.CharField(max_length=255)
