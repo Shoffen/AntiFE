@@ -89,10 +89,11 @@
 
 </head>
 
+<body>
   <div class="container">
     <h1 class="blue-text">Produktų maistingumo peržiūra</h1>
 
-    <form action="" method="GET" class="search-form">
+    <form action="" method="GET" class="search-form" id="searchForm">
       <select name="category">
         <option value="">Visi produktai</option>
         <option value="Amino rūgštys">Amino rūgštys</option>
@@ -114,7 +115,7 @@
       <button type="submit" class="search-button">Ieškoti</button>
     </form>
 
-    <table class="table">
+    <table class="table" id="productTable">
       <thead>
         <tr>
           <th>Pavadinimas</th>
@@ -148,4 +149,40 @@
       </tbody>
     </table>
   </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const searchInput = document.querySelector('.search-input');
+      const productTable = document.getElementById('productTable');
+  
+      searchInput.addEventListener('input', function(event) {
+        event.preventDefault(); //kai nebeliks buttono tai istrint reiks
+  
+        const formData = new FormData(document.getElementById('searchForm'));
+        const query = formData.get('query');
+  
+        if (query) {
+          fetch(`?query=${encodeURIComponent(query)}`)
+            .then(response => response.text())
+            .then(data => {
+              //nukopijuoja visa page
+              const tempElement = document.createElement('div');
+              tempElement.innerHTML = data;
+              // is to viso page pasiima tik tbody updatint
+              const rows = tempElement.querySelectorAll('tbody');
+              while (productTable.rows.length > 1) {
+                productTable.deleteRow(1);
+              }
+              rows.forEach(row => {
+                productTable.appendChild(row);
+              });
+            })
+            .catch(error => {
+              console.error('Error:', error);
+            });
+        }
+      });
+    });
+  </script>  
+  
+  </body>
 {% endblock %}

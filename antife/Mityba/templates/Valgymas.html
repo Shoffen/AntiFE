@@ -86,6 +86,29 @@ h3 {
   background-color: transparent; /* Set background color to transparent */
 } 
 
+.valgymai-table td {
+    position: relative; /* Ensure positioning of pseudo-element */
+}
+
+.valgymai-table td.hoverable:hover::after {
+    content: attr(data-aprasas); /* Display description on hover */
+    position: absolute; /* Position relative to the cell */
+    top: 100%; /* Position below the cell */
+    left: 50%; /* Align with the center of the cell */
+    transform: translateX(-50%); /* Center horizontally */
+    background-color: #f9f9f9; /* Light background color */
+    color: #333; /* Text color */
+    font-size: 14px; /* Font size */
+    padding: 10px; /* Padding for the tooltip */
+    border-radius: 5px; /* Rounded corners */
+    border: 1px solid #ccc; /* Border */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Shadow */
+    z-index: 1; /* Ensure the tooltip appears above other content */
+    width: 500px; /* Set a fixed width */
+    max-width: 140%; /* Limit the maximum width */
+    white-space: pre-wrap; /* Allow line breaks */
+}
+
   </style>
 </head>
 
@@ -109,7 +132,9 @@ h3 {
         <tbody>
           {% for valgomasreceptas in valgymas.valgymo_receptas_set.all %}
             <tr>
-              <td>{{ valgomasreceptas.fk_Receptasid_Receptas.pavadinimas }}</td>
+              <td class="hoverable" data-aprasas="{{ valgomasreceptas.fk_Receptasid_Receptas.aprasas }}">
+                {{ valgomasreceptas.fk_Receptasid_Receptas.pavadinimas }}
+            </td>
               <td>{{ valgomasreceptas.kiekis }} </td>
               <td>{{ valgomasreceptas.total_baltymas }} </td>
               <td>{{ valgomasreceptas.total_fenilalaninas }} </td>
@@ -139,7 +164,7 @@ h3 {
         <input type="text" id="searchInput" placeholder="Paieška">
         <br>
         <div id="filteredOptions"></div>
-      </div>
+      </div> 
     {% endfor %}
     
   </div>
@@ -168,7 +193,7 @@ function handleAddNewClick(event) {
   filteredOptions.innerHTML = '';
 
   const recipeSelect = document.createElement('select');
-  recipeSelect.name = 'selected_recipe';
+  recipeSelect.nam = 'selected_recipe';
 
   all_receptai.forEach(receptas => {
     const option = document.createElement('option');
@@ -176,38 +201,44 @@ function handleAddNewClick(event) {
     option.text = receptas.fields.pavadinimas;
     recipeSelect.add(option);
   });
-  /*
-  cia produktai sudaryta kazkaip reikia is name i pavadinimas pakeist ir galesiu per abu ta pati naudot mes i ta pacia lentele
-  all_products.forEach(receptas => {
+  all_products.forEach(prod => {
     const option = document.createElement('option');
-    option.value = receptas;
-    option.text = receptas.fields.name;
+    option.value = prod;
+    option.text = prod.fields.name;
     recipeSelect.add(option);
   });
-  */
 
   addNewForm.appendChild(searchInput);
-  addNewForm.appendChild(document.createElement('br'));
 
   filteredOptions.appendChild(recipeSelect);
-
   searchInput.addEventListener('input', () => {
-    const searchText = searchInput.value.toLowerCase();
-    const filteredReceptai = all_receptai.filter(receptas => receptas.fields.pavadinimas.toLowerCase().includes(searchText));
-
-    updateOptions(recipeSelect, filteredReceptai);
-  });
+      const searchText = searchInput.value.toLowerCase();
+      const filteredReceptai = all_receptai.filter(receptas => receptas.fields.pavadinimas.toLowerCase().includes(searchText));
+      const filteredProducts = all_products.filter(receptas => receptas.fields.name.toLowerCase().includes(searchText));
+      console.log(recipeSelect);
+      console.log(filteredReceptai);
+      console.log(filteredProducts);
+      updateOptions(recipeSelect, filteredReceptai, filteredProducts);
+    });
 }
 
-function updateOptions(selectElement, filteredData) {
-  selectElement.innerHTML = '';
+function updateOptions(selectElement, filteredReceptai, filteredProducts) {
+    selectElement.innerHTML = '';
 
-  filteredData.forEach(item => {
-    const option = document.createElement('option');
-    option.value = item;
-    option.text = item.fields.pavadinimas;
-    selectElement.add(option);
-  });
-}
+    filteredReceptai.forEach(item => {
+      const option = document.createElement('option');
+      option.value = item;
+      option.text = item.fields.pavadinimas;
+      selectElement.add(option);
+    });
+    filteredProducts.forEach(item => {
+      const option = document.createElement('option');
+      option.value = item;
+      option.text = item.fields.name;
+      selectElement.add(option);
+    });
+  }
+
+
 </script>
 {% endblock %}
