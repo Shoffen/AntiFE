@@ -58,6 +58,9 @@ def create_kraujo_tyrimas(request):
 
 
 
+import plotly.express as px
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 
 @login_required
 def kraujotyrview(request):
@@ -69,7 +72,22 @@ def kraujotyrview(request):
         return render(request, 'Kraujotyr.html')
 
     # Extract x (dates) and y (fenilalaninas) data
-    x = [kraujo_tyrimas.data for kraujo_tyrimas in kraujo_tyrimai_qs]
+    lithuanian_month_names = {
+        1: 'Sausio',
+        2: 'Vasario',
+        3: 'Kovo',
+        4: 'Balandžio',
+        5: 'Gegužės',
+        6: 'Birželio',
+        7: 'Liepos',
+        8: 'Rugpjūčio',
+        9: 'Rugsėjo',
+        10: 'Spalio',
+        11: 'Lapkričio',
+        12: 'Gruodžio'
+    }
+    x = [f"{kraujo_tyrimas.data.strftime('%Y')} {lithuanian_month_names[kraujo_tyrimas.data.month]} {kraujo_tyrimas.data.day}" for kraujo_tyrimas in kraujo_tyrimai_qs]
+
     y = [kraujo_tyrimas.fenilalaninas for kraujo_tyrimas in kraujo_tyrimai_qs]
     
     # Combine dates and phenylalanine values into tuples
@@ -85,10 +103,49 @@ def kraujotyrview(request):
     # Unzip sorted data points into separate lists
     sorted_dates, sorted_phenylalanine = zip(*sorted_data_points)
     
-    # Plot the graph
-    chart = get_plot(range(len(sorted_dates)), sorted_phenylalanine, sorted_dates)
+    # Get unique years
+    years = sorted(set(date.split(' ')[0] for date in sorted_dates))
+    
+    # Handle form submission
+    if request.method == 'POST':
+        selected_year = int(request.POST.get('year'))
+        # Filter data points for the selected year
+        filtered_data_points = [(date, phenylalanine) for date, phenylalanine in sorted_data_points if date.startswith(str(selected_year))]
+        # Unzip filtered data points into separate lists
+        sorted_dates, sorted_phenylalanine = zip(*filtered_data_points)
+    else:
+        # By default, show data points for the most recent year
+        selected_year = years[-1]
+        # Filter data points for the most recent year
+        filtered_data_points = [(date, phenylalanine) for date, phenylalanine in sorted_data_points if date.startswith(str(selected_year))]
+        # Unzip filtered data points into separate lists
+        sorted_dates, sorted_phenylalanine = zip(*filtered_data_points)
+    
+    # Create the plot
+    fig = px.line(y=sorted_phenylalanine, x=sorted_dates, labels={'x': 'Data', 'y': 'Fenilalaninas µmol/l'},
+                  hover_name=sorted_dates)  # Set hover_name to dates
+    
+    # Add scatter markers with larger size
+    fig.add_scatter(x=sorted_dates, y=sorted_phenylalanine, mode='markers', marker=dict(size=10), showlegend=False, hoverinfo='text')
 
-    return render(request, 'Kraujotyr.html', {'chart': chart})
+    # Customize hover text and remove legend title
+    hover_text = 'Fenilalaninas: %{y}<br>Data: %{x}'
+    fig.update_traces(hovertemplate=hover_text)
+
+    
+    # Set the default range for the y-axis
+    fig.update_layout(yaxis=dict(range=[0, 800]))
+    
+    # Convert plot to HTML
+    chart = fig.to_html()
+    
+    context = {'chart': chart, 'years': years, 'selected_year': selected_year}
+    
+    return render(request, 'kraujotyr.html', context)
+
+
+
+
 
 
 
