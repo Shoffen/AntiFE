@@ -16,4 +16,5 @@ urlpatterns = [
     path('add_to_favorites/<int:recipe_id>/', views.add_to_favorites, name='add_to_favorites'),
     path('delete_valgomasReceptas/<int:valgymo_receptas_id>/', views.delete_valgomasReceptas, name='delete_valgomasReceptas'),
     path('delete_valgomasProduktas/<int:valgomas_produktas_id>/', views.delete_valgomasProduktas, name='delete_valgomasProduktas'),
+    path('add_valgymas/', views.add_new_valgymas, name='add_valgymas'),
 ]

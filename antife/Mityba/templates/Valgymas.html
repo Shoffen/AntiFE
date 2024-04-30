@@ -109,6 +109,17 @@ h3 {
     white-space: pre-wrap; /* Allow line breaks */
 }
 
+.amountWarning {
+  color: red;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+/* Add this CSS to hide the warning message initially */
+.hidden {
+  display: none;
+}
+
   </style>
 </head>
 
@@ -132,9 +143,11 @@ h3 {
         <tbody>
           {% for valgomasreceptas in valgymas.valgymo_receptas_set.all %}
             <tr>
-              <td class="hoverable" data-aprasas="{{ valgomasreceptas.fk_Receptasid_Receptas.aprasas }}">
-                {{ valgomasreceptas.fk_Receptasid_Receptas.pavadinimas }}
-            </td>
+              <td class="hoverable" data-aprasas="Ingridientai:
+    {% for recepto_produktas in valgomasreceptas.fk_Receptasid_Receptas.recepto_produktai_set.all %}{{ recepto_produktas.fk_Produktasid_Produktas.name }} - {{ recepto_produktas.amount }} g. {% if not forloop.last %} {% endif %}
+    {% endfor %}&#10;Aprašymas:&#10;    {{ valgomasreceptas.fk_Receptasid_Receptas.aprasas }}">
+    {{ valgomasreceptas.fk_Receptasid_Receptas.pavadinimas }}
+</td>
               <td>{{ valgomasreceptas.kiekis }} </td>
               <td>{{ valgomasreceptas.total_baltymas }} </td>
               <td>{{ valgomasreceptas.total_fenilalaninas }} </td>
@@ -159,12 +172,18 @@ h3 {
         </tbody>
       </table>
       {% endif %}
-      <button class="add-new-button">Add New</button> 
-      <div class="add-new-form hidden">
-        <input type="text" id="searchInput" placeholder="Paieška">
+      <button class="add-new-button" data-index="{{ forloop.counter }}">Add New</button> 
+      <div class="add-new-form hidden" data-index="{{ forloop.counter }}">
+        <input type="text" class="searchInput" placeholder="Paieška">
         <br>
-        <div id="filteredOptions"></div>
-      </div> 
+        <div class="filteredOptions"></div>
+        <select class="recipeSelect" name="selected_recipe"></select>
+        <br>
+        <input type="number" class="amountInput" placeholder="Kiekis gramais">
+        <br>
+        <div class="amountWarning hidden">Privalote įvesti kiekį!</div>
+        <button class="add-item-button">Prideti</button>
+      </div>
     {% endfor %}
     
   </div>
@@ -183,43 +202,58 @@ addNewButtons.forEach(button => {
 });
 
 function handleAddNewClick(event) {
-  const addNewForm = document.querySelector('.add-new-form');
-  addNewForm.style.display = 'block';
+  const buttonIndex = this.getAttribute('data-index'); // Get the index of the button
+  console.log('Button index:', buttonIndex);
 
-  const searchInput = document.getElementById('searchInput');
+  document.querySelectorAll('.add-new-form').forEach(div => {
+    div.classList.add('hidden');
+  });
+
+const addNewForm = document.querySelector(`.add-new-form[data-index="${buttonIndex}"]`);
+  addNewForm.classList.remove('hidden');
+
+  const searchInput = addNewForm.querySelector('.searchInput');
   searchInput.value = '';
 
-  const filteredOptions = document.getElementById('filteredOptions');
+  const filteredOptions = addNewForm.querySelector('.filteredOptions');
   filteredOptions.innerHTML = '';
 
-  const recipeSelect = document.createElement('select');
-  recipeSelect.nam = 'selected_recipe';
+  const recipeSelect = addNewForm.querySelector('.recipeSelect');
+  recipeSelect.innerHTML = '';
+
+  const amountInput = addNewForm.querySelector('.amountInput');
+  amountInput.value = '';
 
   all_receptai.forEach(receptas => {
     const option = document.createElement('option');
-    option.value = receptas;
+    option.value = receptas.pk;
     option.text = receptas.fields.pavadinimas;
     recipeSelect.add(option);
   });
   all_products.forEach(prod => {
     const option = document.createElement('option');
-    option.value = prod;
+    option.value = prod.pk;
     option.text = prod.fields.name;
     recipeSelect.add(option);
   });
 
-  addNewForm.appendChild(searchInput);
-
-  filteredOptions.appendChild(recipeSelect);
   searchInput.addEventListener('input', () => {
-      const searchText = searchInput.value.toLowerCase();
-      const filteredReceptai = all_receptai.filter(receptas => receptas.fields.pavadinimas.toLowerCase().includes(searchText));
-      const filteredProducts = all_products.filter(receptas => receptas.fields.name.toLowerCase().includes(searchText));
-      console.log(recipeSelect);
-      console.log(filteredReceptai);
-      console.log(filteredProducts);
-      updateOptions(recipeSelect, filteredReceptai, filteredProducts);
-    });
+    const searchText = searchInput.value.toLowerCase();
+    const filteredReceptai = all_receptai.filter(receptas => receptas.fields.pavadinimas.toLowerCase().includes(searchText));
+    const filteredProducts = all_products.filter(receptas => receptas.fields.name.toLowerCase().includes(searchText));
+    console.log(recipeSelect);
+    console.log(filteredReceptai);
+    console.log(filteredProducts);
+    updateOptions(recipeSelect, filteredReceptai, filteredProducts);
+  });
+
+  addNewButtons.forEach(button => {
+    if (button.getAttribute('data-index') !== buttonIndex) {
+      button.classList.remove('hidden');
+    }
+  });
+
+  this.classList.add('hidden');
 }
 
 function updateOptions(selectElement, filteredReceptai, filteredProducts) {
@@ -239,6 +273,43 @@ function updateOptions(selectElement, filteredReceptai, filteredProducts) {
     });
   }
 
+const addItemButtons = document.querySelectorAll('.add-item-button');
+
+addItemButtons.forEach(button => {
+  button.addEventListener('click', handleAddItemClick);
+});
+
+function handleAddItemClick(event) {
+  console.log('Add Item Button Clicked');
+  const addNewForm = this.parentElement;
+  const buttonIndex = addNewForm.getAttribute('data-index');
+  const selectedID = addNewForm.querySelector('.recipeSelect').value;
+  const selectedOption = addNewForm.querySelector('.recipeSelect').options[addNewForm.querySelector('.recipeSelect').selectedIndex];
+  const selectedName = selectedOption.text;
+  const amount = addNewForm.querySelector('.amountInput').value;
+
+  if (amount.trim() === '') {
+    const amountWarning = addNewForm.querySelector('.amountWarning');
+    amountWarning.textContent = 'Privalote įvesti kiekį!';
+    amountWarning.classList.remove('hidden');
+    return;
+  }
+
+  if (parseFloat(amount) < 0) {
+    const amountWarning = addNewForm.querySelector('.amountWarning');
+    amountWarning.textContent = 'Kiekis negali būti neigiamas!';
+    amountWarning.classList.remove('hidden');
+    return;
+  }
+
+  console.log('Selected Recipe:', selectedID);
+  console.log('Selected Recipe:', selectedName);
+  console.log('Amount:', amount);
+  console.log(buttonIndex);
+
+  const url = `{% url 'mityba:add_valgymas' %}?selectedID=${selectedID}&selectedName=${selectedName}&amount=${amount}&buttonIndex=${buttonIndex}`;
+  window.location.href = url;
+}
 
 </script>
 {% endblock %}
