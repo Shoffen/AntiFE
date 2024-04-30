@@ -39,8 +39,9 @@ class Forumai(models.Model):
     pavadinimas = models.CharField(max_length=255)
 
 class Irasai(models.Model):
-    tekstas = models.CharField(max_length=255)
+    tekstas = models.CharField(max_length=2555)
     data = models.DateField()
+    category = models.CharField(max_length=50,default="Klausimai daktarui") # New field for category
     fk_Forumasid_Forumas = models.ForeignKey(Forumai, on_delete=models.CASCADE)
     fk_Naudotojasid_Naudotojas = models.ForeignKey(Naudotojai, on_delete=models.CASCADE)
 

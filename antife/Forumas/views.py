@@ -14,6 +14,7 @@ from django.contrib.auth import get_user_model
 
 from django.contrib import messages
 
+@login_required
 def like_comment(request, pk):
     comment = get_object_or_404(Komentarai, pk=pk)
     
@@ -23,14 +24,19 @@ def like_comment(request, pk):
         if user in comment.likes.all():
             # User has already liked this comment
             comment.likes.remove(user)
-            messages.info(request, "You have unliked this comment.")
+            message = "You have unliked this comment."
+            message_type = "info"
         else:
             # User has not yet liked this comment
             comment.likes.add(user)
-            messages.success(request, "You have liked this comment.")
+            message = "You have liked this comment."
+            message_type = "success"
+    else:
+        message = "You need to be logged in to like a comment."
+        message_type = "error"
             
-    # Redirect back to the previous page with messages
-    return redirect(request.META.get('HTTP_REFERER', 'forumas:forum'))
+    # Return JSON response to indicate success and provide message
+    return JsonResponse({'message': message, 'type': message_type})
 
 
 
@@ -70,14 +76,21 @@ def create_topic(request):
     if request.method == 'POST':
         title = request.POST.get('title')
         text = request.POST.get('text')
-        if title and text:  # Check if both title and text are provided
+        category = request.POST.get('recipient')  # Extract the selected category
+        if title and text and category:  # Check if title, text, and category are provided
             user = request.user
             today = date.today()
             forum = Forumai.objects.create(pavadinimas=title)
-            Irasai.objects.create(tekstas=text, data=today, fk_Forumasid_Forumas=forum, fk_Naudotojasid_Naudotojas=user.naudotojai)
+            Irasai.objects.create(
+                tekstas=text,
+                data=today,
+                fk_Forumasid_Forumas=forum,
+                fk_Naudotojasid_Naudotojas=user.naudotojai,
+                category=category  # Save the selected category
+            )
             messages.success(request, 'Topic created successfully.')
             return redirect('Forumas:forumasview')
         else:
-            messages.error(request, 'Please provide both title and text.')
+            messages.error(request, 'Please provide both title, text, and select a category.')
             return redirect('Forumas:forumasview')  # Redirect back to the forum view
     return render(request, 'Forumas.html', {})  # Render the forum page for GET requests
