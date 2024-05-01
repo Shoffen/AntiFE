@@ -155,10 +155,11 @@
             <form method="post" action="{% url 'kraujo_tyrimai:kraujotyrview' %}">
                 {% csrf_token %}
                 <h2>Filtruoti pagal metus</h2>
-                <label for="year" style="display: inline-block;"></label>
+                <label for="year" style="display: inline-block;">Metai:</label>
                 <select name="year" id="year">
                     {% for year in years %}
-                        <option value="{{ year }}">{{ year }}</option>
+                        <!-- Set the selected attribute if the year matches the selected_year -->
+                        <option value="{{ year }}" {% if year == selected_year %} selected {% endif %}>{{ year }}</option>
                     {% endfor %}
                 </select>
                 <input type="submit" value="Filtruoti" class="filtruoti-btn">
@@ -168,6 +169,7 @@
         <div class="form-container">
             <form method="post" action="{% url 'kraujo_tyrimai:create_kraujo_tyrimas' %}">
                 {% csrf_token %}
+                <input type="hidden" name="selected_year" value="{{ selected_year }}">
                 <h2>Pridėti kraujo tyrimą</h2>
                 <div class="input-container">
                     <label for="id_data">Data:</label>
@@ -191,5 +193,19 @@
         // Activate hover functionality for the chart image
         mplcursors.enable(document.querySelectorAll('.chart-img'));
     </script>
+    <script>
+        // Get the select element
+        const selectElement = document.getElementById('year');
+        // Get the label element
+        const labelElement = document.querySelector('label[for="year"]');
+        // Set the initial title
+        labelElement.innerText = 'Metai: ' + selectElement.value;
+    
+        // Add change event listener to update the title when the selection changes
+        selectElement.addEventListener('change', function() {
+            labelElement.innerText = 'Metai: ' + selectElement.value;
+        });
+    </script>
+    
 
 {% endblock %}
