@@ -304,3 +304,42 @@ def add_new_valgymas(request):
                 return valgymai_list(request)
 
     return valgymai_list(request)
+
+def saveCopy(request):
+    selected_date = request.GET.get('selectedDate')
+    print(selected_date)
+    request.session['copyDate'] = selected_date
+    return render(request, 'valgiarastis.html')
+
+def copyValgiarastis(request):
+    naudotojas = Naudotojai.objects.get(user=request.user)
+    copyDate = request.session.get('copyDate')
+    valgiarastisCopy = get_object_or_404(Valgiarasciai, fk_Naudotojasid_Naudotojas=naudotojas, data=copyDate)
+    pasteDate = request.session.get('selectedDate')
+    valgiarastisPaste = get_object_or_404(Valgiarasciai, fk_Naudotojasid_Naudotojas=naudotojas, data=pasteDate)
+    print(valgiarastisCopy.data)
+    print(valgiarastisPaste.data)
+    valgiarastisPaste.valgymai_set.all().delete()
+    tipai = ["Pusryčiai", "Pietūs", "Vakarienė", "Papildomi"]
+    for tipas in tipai:
+        valgymas = Valgymai.objects.create(
+            tipas=tipas,
+            fk_Valgiarastisid_Valgiarastis=valgiarastisPaste
+        )
+        receptai_to_copy = Valgymo_receptas.objects.filter(fk_Valgymasid_Valgymas__fk_Valgiarastisid_Valgiarastis=valgiarastisCopy, fk_Valgymasid_Valgymas__tipas=tipas)
+        for receptas in receptai_to_copy:
+            Valgymo_receptas.objects.create(
+                fk_Receptasid_Receptas=receptas.fk_Receptasid_Receptas,
+                fk_Valgymasid_Valgymas=valgymas,
+                kiekis=receptas.kiekis
+            )
+        produktai_to_copy = Valgomas_produktas.objects.filter(fk_Valgymasid_Valgymas__fk_Valgiarastisid_Valgiarastis=valgiarastisCopy, fk_Valgymasid_Valgymas__tipas=tipas)
+        
+        for prod in produktai_to_copy:
+            Valgomas_produktas.objects.create(
+                fk_Produktasid_Produktas=prod.fk_Produktasid_Produktas,
+                fk_Valgymasid_Valgymas=valgymas,
+                kiekis=prod.kiekis
+            )
+
+    return valgymai_list(request)

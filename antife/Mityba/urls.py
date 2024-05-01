@@ -17,4 +17,6 @@ urlpatterns = [
     path('delete_valgomasReceptas/<int:valgymo_receptas_id>/', views.delete_valgomasReceptas, name='delete_valgomasReceptas'),
     path('delete_valgomasProduktas/<int:valgomas_produktas_id>/', views.delete_valgomasProduktas, name='delete_valgomasProduktas'),
     path('add_valgymas/', views.add_new_valgymas, name='add_valgymas'),
+    path('saveCopy/', views.saveCopy, name='saveCopy'),
+    path('copyValgiarastis/', views.copyValgiarastis, name='copyValgiarastis'),
 ]
