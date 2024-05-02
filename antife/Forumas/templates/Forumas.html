@@ -43,15 +43,19 @@
             <!-- Display existing topics -->
 {% if topics %}
 {% for irasas in topics %}
-    <div class="card mb-3">
+    <div class="card mb-3" data-category="{{ irasas.category }}">
         <div class="card-body">
             <h5 class="card-title" onclick="togglePost('{{ irasas.id }}')">{{ irasas.pavadinimas }}</h5>
             <div id="post_{{ irasas.id }}" style="display: none;">
                 <div>
                     {{ irasas.tekstas| safe }}
+                    <h5 class="card-header" style="font-size: 14px; background-color: #f8f9fa; border-bottom: 1px solid #dee2e6;">Paskelbė:
+                        <span style="font-weight: bold;"> {{ irasas.fk_Naudotojasid_Naudotojas.user }}</span> - {{ irasas.data }}
+                    </h5>
                 </div>
-                <!-- Toggle button for comments -->
-                <button class="btn btn-sm btn-outline-primary float-right" onclick="toggleComments('{{ irasas.id }}')">Pridėti komentarą</button>
+                <div class="comment-button-container">
+                    <button class="btn btn-sm btn-outline-primary float-right" onclick="toggleComments('{{ irasas.id }}')">Pridėti komentarą</button>
+                </div>
                 <!-- Comments section -->
                 <div id="comments_{{ irasas.id }}" style="display: none;">
                     <!-- Comment form -->
@@ -68,17 +72,24 @@
                 <div>
                     <!-- Display existing comments -->
                     {% for comment in irasas.komentarai_set.all %}
-                        <div class="comment" id="comment_{{ comment.id }}">
-                            <p>{{ comment.tekstas }}</p>
-                            <p><small>Paskelbė {{ comment.fk_Naudotojasid_Naudotojas.vardas }} {{ comment.fk_Naudotojasid_Naudotojas.pavarde }} {{ comment.data }}</small></p>
-                            <!-- Like/unlike button -->
-                            <button type="button" class="like-button" aria-label="Like" onclick="likeComment('{{ comment.id }}')">
-                                <i id="like_icon_{{ comment.id }}" class="far fa-heart"></i>
-                            </button>
-                            <!-- Display count of likes -->
-                            <span id="like_count_{{ comment.id }}">Likes: {{ comment.likes.count }}</span>
-                        </div>
-                    {% endfor %}
+                    <div class="comment" id="comment_{{ comment.id }}">
+                        <p>{{ comment.tekstas }}</p>
+                        <p><small>Paskelbė {{ comment.fk_Naudotojasid_Naudotojas.user }} {{ comment.data }}</small></p>
+                        <!-- Render delete button if the logged-in user is the owner of the comment -->
+                        {% if comment.fk_Naudotojasid_Naudotojas.user == request.user %}
+                        <button type="button" class="btn btn-danger" onclick="deleteComment('{{ comment.id }}')">
+                            <i class="fas fa-trash-alt"></i> <!-- Trash bin icon -->
+                        </button>
+                        {% endif %}
+                        
+                        <!-- Like/unlike button -->
+                        <button type="button" class="like-button" aria-label="Like" onclick="likeComment('{{ comment.id }}')">
+                            <i id="like_icon_{{ comment.id }}" class="far fa-heart"></i>
+                        </button>
+                        <!-- Display count of likes -->
+                        <span id="like_count_{{ comment.id }}">Likes: {{ comment.likes.count }}</span>
+                    </div>
+                {% endfor %}
                 </div>
             </div>
         </div>
@@ -99,6 +110,10 @@
     {% endif %}
 
     <style>
+        .comment-button-container {
+            margin-top: 10px; /* Adjust as needed */
+            margin-bottom: 10px; /* Adjust as needed */
+        }
         .segment-container {
             margin-top: 10px;
             display: flex;
@@ -230,14 +245,6 @@
         hiddenInput.value = quill.root.innerHTML;
     });
 
-    // Attach click event listeners to category buttons
-    document.querySelectorAll('.segment-btn').forEach(function(button) {
-        button.addEventListener('click', function() {
-            var categoryButtonText = this.textContent.trim(); // Get the button text
-            filterTopicsByCategory(categoryButtonText); // Pass button text to filter function
-        });
-    });
-
     // Function to map button text to category names stored in the database
     function mapButtonToCategory(buttonText) {
         switch (buttonText) {
@@ -253,30 +260,33 @@
     }
 
     // Function to filter topics by category
-    function filterTopicsByCategory(buttonText) {
-        console.log("buttonText:", buttonText);
+    function filterTopicsByCategory(category, topicCards) {
+    console.log("Selected category:", category);
 
-        var category = mapButtonToCategory(buttonText);
-        console.log("Mapped category:", category);
+    topicCards.forEach(function(card) {
+        if (card) {
+            var cardCategory = card.dataset.category;
+            if (cardCategory) {
+                cardCategory = cardCategory.trim();
+            }
+            console.log("Card category:", cardCategory);
 
-        if (category === null) return; // Exit if category is unknown
-
-        topicCards.forEach(function(card) {
-            var cardCategory = card.dataset.category.trim();
-            console.log("cardCategory:", cardCategory, ", length:", cardCategory.length);
-
-            category = category.trim();
-            console.log("category:", category, ", length:", category.length);
-
-            console.log("Comparison result:", cardCategory === category);
-
-            if (!cardCategory || category === "Visi" || cardCategory === category) {
+            if (!category || category === "Visi" || cardCategory === category) {
                 card.style.display = 'block';
             } else {
                 card.style.display = 'none';
             }
-        });
-    }
+        }
+    });
+}
+
+// Attach click event listeners to category buttons
+document.querySelectorAll('.segment-btn').forEach(function(button) {
+    button.addEventListener('click', function() {
+        var categoryButtonText = this.textContent.trim(); // Get the button text
+        filterTopicsByCategory(mapButtonToCategory(categoryButtonText), document.querySelectorAll('.card')); // Pass button text and topic cards to filter function
+    });
+});
 
     // Function to toggle the display of the Quill editor
     function toggleEditor() {
@@ -324,6 +334,33 @@
                 container.style.display = 'none';
             }, 3000); // Hide the message after 3 seconds (adjust as needed)
         }
+
+        function deleteComment(commentId) {
+            if (confirm("Are you sure you want to delete this comment?")) {
+                fetch("{% url 'Forumas:delete_comment' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ comment_id: commentId })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // If the comment is successfully deleted, remove it from the DOM
+                        var commentElement = document.getElementById('comment_' + commentId);
+                        if (commentElement) {
+                            commentElement.remove();
+                        }
+                    } else {
+                        // Handle error response
+                        console.error('Error:', response.statusText);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        }
+
 
     </script>
 {% endblock %}
