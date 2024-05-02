@@ -5,34 +5,42 @@
 {% endblock %}
 
 {% block content %}
-    <div id="message-container" class="alert" style="display: none;"></div>
-    <div class="container">
-        <h1>Forumas</h1>
+<div id="message-container" class="alert" style="display: none;"></div>
+<div class="container">
+    <div class="row justify-content-center">
+        <h1 class="text-center">Forumas</h1>
+    </div>
+    <div class="row justify-content-center">
+        <!-- Button to toggle the form visibility -->
+        <button id="toggle-form-btn" class="btn btn-primary mb-3 custom-buttonn">Sukurti naują temą</button>
+    </div>
 
-        <!-- Add form to allow users to create a new topic -->
-        <form method="post" action="{% url 'Forumas:create_topic' %}">
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="topic_title">Temos pavadinimas:</label>
-                <input type="text" class="form-control" id="topic_title" name="title" required>
-            </div>
-            <div class="form-group">
-                <label for="recipient">Kam:</label>
-                <select class="form-control" id="recipient" name="recipient" required>
-                    <option value="Daktarui">Daktarui</option>
-                    <option value="Bendruomenei">Bendruomenei</option>
-                    <option value="Moderatoriams">Moderatoriams</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="post_text">Tekstas:</label>
-                <div id="editor" style="height: 300px;"></div> <!-- This div will be replaced by Quill.js -->
-                <input type="hidden" name="text" id="hidden_input"> <!-- Hidden input to store Quill's HTML content -->
-            </div>
-            <button type="submit" class="btn btn-primary">Sukurti tema</button>
+    <!-- Form to allow users to create a new topic (initially hidden) -->
+    <form id="create-topic-form" method="post" action="{% url 'Forumas:create_topic' %}" style="display: none;">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="topic_title">Temos pavadinimas:</label>
+            <input type="text" class="form-control" id="topic_title" name="title" required>
+        </div>
+        <div class="form-group">
+            <label for="recipient">Kam:</label>
+            <select class="form-control" id="recipient" name="recipient" required>
+                <option value="Daktarui">Daktarui</option>
+                <option value="Bendruomenei">Bendruomenei</option>
+                <option value="Moderatoriams">Moderatoriams</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="post_text">Tekstas:</label>
+            <div id="editor" style="height: 300px;"></div> <!-- This div will be replaced by Quill.js -->
+            <input type="hidden" name="text" id="hidden_input"> <!-- Hidden input to store Quill's HTML content -->
+        </div>
+        <button type="submit" class="btn btn-primary">Sukurti tema</button>
+    </form>
+</div>
             <!-- Interactive segments -->
             <div class="segment-container">
-                <button type="button" class="segment-btn">Klausimai daktarui</button>
+                <button type="button" class="segment-btn">Klausimai gydytojui</button>
                 <button type="button" class="segment-btn">Klausimai bendruomenei</button>
                 <button type="button" class="segment-btn">Klausimai moderatoriams</button>
             </div>
@@ -132,6 +140,41 @@
     {% endif %}
 
     <style>
+
+        .custom-buttonn {
+        background-color: #ff9500;
+        border-color: #ff9500;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s, border-color 0.3s, color 0.3s, box-shadow 0.3s;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Hover effect */
+        .custom-buttonn:hover {
+        background-color: #ffa07a;
+        border-color: #ffa07a;
+        color: #fff;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Focus effect */
+        .custom-buttonn:focus {
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.5);
+        outline: none;
+        }
+
+        /* Active effect */
+        .custom-buttonn:active {
+        background-color: #ff7f00;
+        border-color: #ff7f00;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+        }
+
         .comment-button-container {
             margin-top: 10px; /* Adjust as needed */
             margin-bottom: 10px; /* Adjust as needed */
@@ -415,6 +458,21 @@ orderComments();
                 .catch(error => console.error('Error:', error));
             }
         }
+        function toggleFormVisibility() {
+            var form = document.getElementById('create-topic-form');
+            var btn = document.getElementById('toggle-form-btn');
+            
+            if (form.style.display === 'none') {
+                form.style.display = 'block';
+                btn.textContent = 'Uždaryti formą'; // Change button text when form is visible
+            } else {
+                form.style.display = 'none';
+                btn.textContent = 'Sukurti naują temą'; // Change button text when form is hidden
+            }
+        }
+
+        // Attach click event listener to the toggle button
+        document.getElementById('toggle-form-btn').addEventListener('click', toggleFormVisibility);
 
 
     </script>
