@@ -40,74 +40,53 @@
 
         <hr>
 
-        <!-- Display existing topics -->
-        {% if topics %}
-            {% for topic, irasai in topics %}
-            <div class="card mb-3" data-category="{{ topic.category|default:'' }}">
-                    <div class="card-body">
-                        <h5 class="card-title" onclick="togglePost('{{ topic.id }}')" title="Noredami pamatyti tekstą spustelekite cia">
-                            {{ topic.pavadinimas }}
-                        </h5>
-                        <div id="post_{{ topic.id }}" style="display: none;" class="styled-box">
-                            <ul class="no-dot">
-                                {% for irasas in irasai %}
-                                    <li>{{ irasas.tekstas|safe }}</li> <!-- Use the safe filter here -->
-                                {% endfor %}
-                            </ul>
-                        </div>
-                        <button class="btn btn-sm btn-outline-primary float-right" onclick="toggleAllComments('{{ topic.id }}')">Peržiūrėti komentarus</button> <!-- Button for displaying all comments -->
-                        <button class="btn btn-sm btn-outline-primary float-right" onclick="toggleComments('{{ topic.id }}')">Pridėti komentarą </button> <!-- Toggle button for comments -->
-                        <div id="comments_{{ topic.id }}" style="display: none;"> <!-- Comments section -->
-                            <!-- Comment form -->
-                            <form method="post" action="{% url 'Forumas:add_comment' irasai.first.id %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="irasas_id" value="{{ irasai.first.id }}">
-                                <div class="form-group">
-                                    <label for="comment_text">Komentaras:</label>
-                                    <textarea class="form-control" id="comment_text_{{ topic.id }}" name="text" rows="3" required></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Pateikti</button>
-                            </form>
-                        </div>
-                        <div>
-                            <!-- Display existing comments -->
-                            <div id="existing_comments_{{ topic.id }}" style="display: none;">
-                                {% for irasas in irasai %}
-                                    {% for comment in irasas.komentarai_set.all %}
-                                        <div class="comment" id="comment_{{ comment.id }}">
-                                            <p>{{ comment.tekstas }}</p>
-                                            <p><small>Paskelbė {{ comment.fk_Naudotojasid_Naudotojas.vardas }} {{ comment.fk_Naudotojasid_Naudotojas.pavarde }} {{ comment.data }}</small></p>
-                                            <!-- Like/unlike button -->
-                                            {% if request.user.is_authenticated %}
-                                                {% with request.user.naudotojai_ptr_id as user_id %}
-                                                    {% if user_id in comment.likes.values_list %}
-                                                        <!-- Use a filled heart icon for liked -->
-                                                        <button type="button" class="like-button" aria-label="Unlike" onclick="likeComment('{{ comment.id }}')">
-                                                            <i id="like_icon_{{ comment.id }}" class="fas fa-heart"></i>
-                                                        </button>
-                                                        {% else %}
-                                                            <!-- Use an empty heart icon for not liked -->
-                                                            <button type="button" class="like-button" aria-label="Like" onclick="likeComment('{{ comment.id }}')">
-                                                                <i id="like_icon_{{ comment.id }}" class="far fa-heart"></i>
-                                                            </button>
-                                                        {% endif %}
-                                                {% endwith %}
-                                            {% else %}
-                                                <!-- Handle case when user is not authenticated (e.g., display login/signup option) -->
-                                            {% endif %}
-                                            <!-- Display count of likes -->
-                                            <span id="like_count_{{ comment.id }}">Likes: {{ comment.likes.count }}</span>
-                                        </div>
-                                    {% endfor %}
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
+            <!-- Display existing topics -->
+{% if topics %}
+{% for irasas in topics %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title" onclick="togglePost('{{ irasas.id }}')">{{ irasas.pavadinimas }}</h5>
+            <div id="post_{{ irasas.id }}" style="display: none;">
+                <div>
+                    {{ irasas.tekstas| safe }}
                 </div>
-            {% endfor %}
-        {% else %}
-            <p>No topics yet.</p>
-        {% endif %}
+                <!-- Toggle button for comments -->
+                <button class="btn btn-sm btn-outline-primary float-right" onclick="toggleComments('{{ irasas.id }}')">Pridėti komentarą</button>
+                <!-- Comments section -->
+                <div id="comments_{{ irasas.id }}" style="display: none;">
+                    <!-- Comment form -->
+                    <form method="post" action="{% url 'Forumas:add_comment' irasas.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="irasas_id" value="{{ irasas.id }}">
+                        <div class="form-group">
+                            <label for="comment_text">Komentaras:</label>
+                            <textarea class="form-control" id="comment_text_{{ irasas.id }}" name="text" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Pateikti</button>
+                    </form>
+                </div>
+                <div>
+                    <!-- Display existing comments -->
+                    {% for comment in irasas.komentarai_set.all %}
+                        <div class="comment" id="comment_{{ comment.id }}">
+                            <p>{{ comment.tekstas }}</p>
+                            <p><small>Paskelbė {{ comment.fk_Naudotojasid_Naudotojas.vardas }} {{ comment.fk_Naudotojasid_Naudotojas.pavarde }} {{ comment.data }}</small></p>
+                            <!-- Like/unlike button -->
+                            <button type="button" class="like-button" aria-label="Like" onclick="likeComment('{{ comment.id }}')">
+                                <i id="like_icon_{{ comment.id }}" class="far fa-heart"></i>
+                            </button>
+                            <!-- Display count of likes -->
+                            <span id="like_count_{{ comment.id }}">Likes: {{ comment.likes.count }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+{% else %}
+<p>No topics yet.</p>
+{% endif %}
     </div>
 
     <!-- Display messages -->
@@ -119,7 +98,7 @@
         </div>
     {% endif %}
 
-        <style>
+    <style>
         .segment-container {
             margin-top: 10px;
             display: flex;
@@ -239,61 +218,75 @@
         }
         
         var quill = new Quill('#editor', {
-    theme: 'snow'
-});
+        theme: 'snow'
+    });
 
-// Define topicCards globally
-var topicCards = document.querySelectorAll('.card');
+    // Get the hidden input field
+    var hiddenInput = document.getElementById('hidden_input');
 
-              // Function to map button text to category names stored in the database
-              function mapButtonToCategory(buttonText) {
-            switch (buttonText) {
-                case "Klausimai daktarui":
-                    return "Daktarui";
-                case "Klausimai bendruomenei":
-                    return "Bendruomenei";
-                case "Klausimai moderatoriams":
-                    return "Moderatoriams";
-                default:
-                    return null; // Return null for unknown category names
+    // Listen for changes in the Quill editor
+    quill.on('text-change', function() {
+        // Update the value of the hidden input field with the HTML content from Quill
+        hiddenInput.value = quill.root.innerHTML;
+    });
+
+    // Attach click event listeners to category buttons
+    document.querySelectorAll('.segment-btn').forEach(function(button) {
+        button.addEventListener('click', function() {
+            var categoryButtonText = this.textContent.trim(); // Get the button text
+            filterTopicsByCategory(categoryButtonText); // Pass button text to filter function
+        });
+    });
+
+    // Function to map button text to category names stored in the database
+    function mapButtonToCategory(buttonText) {
+        switch (buttonText) {
+            case "Klausimai daktarui":
+                return "Daktarui";
+            case "Klausimai bendruomenei":
+                return "Bendruomenei";
+            case "Klausimai moderatoriams":
+                return "Moderatoriams";
+            default:
+                return null; // Return null for unknown category names
+        }
+    }
+
+    // Function to filter topics by category
+    function filterTopicsByCategory(buttonText) {
+        console.log("buttonText:", buttonText);
+
+        var category = mapButtonToCategory(buttonText);
+        console.log("Mapped category:", category);
+
+        if (category === null) return; // Exit if category is unknown
+
+        topicCards.forEach(function(card) {
+            var cardCategory = card.dataset.category.trim();
+            console.log("cardCategory:", cardCategory, ", length:", cardCategory.length);
+
+            category = category.trim();
+            console.log("category:", category, ", length:", category.length);
+
+            console.log("Comparison result:", cardCategory === category);
+
+            if (!cardCategory || category === "Visi" || cardCategory === category) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
             }
-        }
-// Function to filter topics by category
-function filterTopicsByCategory(buttonText) {
-    console.log("buttonText:", buttonText);
+        });
+    }
 
-    var category = mapButtonToCategory(buttonText);
-    console.log("Mapped category:", category);
-
-    if (category === null) return; // Exit if category is unknown
-
-    topicCards.forEach(function(card) {
-        var cardCategory = card.dataset.category.trim();
-        console.log("cardCategory:", cardCategory, ", length:", cardCategory.length);
-
-        category = category.trim();
-        console.log("category:", category, ", length:", category.length);
-
-        console.log("Comparison result:", cardCategory === category);
-
-        if (!cardCategory || category === "Visi" || cardCategory === category) {
-            card.style.display = 'block';
+    // Function to toggle the display of the Quill editor
+    function toggleEditor() {
+        var editor = document.getElementById('editor');
+        if (editor.style.display === 'none') {
+            editor.style.display = 'block';
         } else {
-            card.style.display = 'none';
+            editor.style.display = 'none';
         }
-    });
-}
-
-
-// Attach click event listeners to category buttons
-document.querySelectorAll('.segment-btn').forEach(function(button) {
-    button.addEventListener('click', function() {
-        var categoryButtonText = this.textContent.trim(); // Get the button text
-        filterTopicsByCategory(categoryButtonText); // Pass button text to filter function
-    });
-});
-
-
+    }
 
         function togglePost(topicId) {
             var post = document.getElementById('post_' + topicId);
