@@ -357,7 +357,7 @@ function copyMealPlan() {
   localStorage.setItem('copyDate', selectedDate);
   const copyDate = localStorage.getItem('copyDate');
   alert("Mitybos planas nukopijuotas!");
-  window.location.href = "{% url 'mityba:valgiarastis' %}";
+  window.location.href = "{% url 'mityba:saveCopy' %}";
 }
 //perkuriam dabartini valgiarasti pagal kita
 function pasteMealPlan() {

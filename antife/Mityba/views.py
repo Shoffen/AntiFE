@@ -326,14 +326,15 @@ def add_new_valgymas(request):
     return valgymai_list(request)
 
 def saveCopy(request):
-    selected_date = request.GET.get('selectedDate')
+    selected_date = request.session.get('selectedDate')
     print(selected_date)
     request.session['copyDate'] = selected_date
-    return render(request, 'valgiarastis.html')
+    return valgiarastis(request)
 
 def copyValgiarastis(request):
     naudotojas = Naudotojai.objects.get(user=request.user)
     copyDate = request.session.get('copyDate')
+    print(copyDate)
     valgiarastisCopy = get_object_or_404(Valgiarasciai, fk_Naudotojasid_Naudotojas=naudotojas, data=copyDate)
     pasteDate = request.session.get('selectedDate')
     valgiarastisPaste = get_object_or_404(Valgiarasciai, fk_Naudotojasid_Naudotojas=naudotojas, data=pasteDate)
