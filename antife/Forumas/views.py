@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-from homepage.models import Forumai, Irasai, Naudotojai, Komentarai
+from homepage.models import Irasai, Naudotojai, Komentarai
 from datetime import date
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -14,6 +14,21 @@ from django.contrib.auth import get_user_model
 
 from django.contrib import messages
 
+def delete_comment(request):
+    if request.method == 'POST':
+        # Get the comment_id from the URL parameters
+        comment_id = request.GET.get('comment_id')
+        # Retrieve the comment object from the database or return 404 if not found
+        comment = get_object_or_404(Komentarai, id=comment_id)
+        # Delete the comment
+        comment.delete()
+        # Return a success response
+        return JsonResponse({'message': 'Comment deleted successfully.'})
+    else:
+        # Return a method not allowed response for non-POST requests
+        return JsonResponse({'message': 'Method Not Allowed'}, status=405)
+
+@login_required
 def like_comment(request, pk):
     comment = get_object_or_404(Komentarai, pk=pk)
     
@@ -23,14 +38,19 @@ def like_comment(request, pk):
         if user in comment.likes.all():
             # User has already liked this comment
             comment.likes.remove(user)
-            messages.info(request, "You have unliked this comment.")
+            message = "You have unliked this comment."
+            message_type = "info"
         else:
             # User has not yet liked this comment
             comment.likes.add(user)
-            messages.success(request, "You have liked this comment.")
+            message = "You have liked this comment."
+            message_type = "success"
+    else:
+        message = "You need to be logged in to like a comment."
+        message_type = "error"
             
-    # Redirect back to the previous page with messages
-    return redirect(request.META.get('HTTP_REFERER', 'forumas:forum'))
+    # Return JSON response to indicate success and provide message
+    return JsonResponse({'message': message, 'type': message_type})
 
 
 
@@ -56,28 +76,35 @@ def add_comment(request, irasas_id):
 
 @login_required
 def forumasview(request):
-    topics = Forumai.objects.all().prefetch_related('irasai_set')
+    irasai_list = Irasai.objects.all().select_related('fk_Naudotojasid_Naudotojas')
     username = None
     if request.user.is_authenticated:
         username = request.user.username
-    irasai_list = []
-    for topic in topics:
-        irasai_list.append((topic, topic.irasai_set.all()))
     return render(request, 'Forumas.html', {'topics': irasai_list, 'username': username})
+
 
 @login_required
 def create_topic(request):
     if request.method == 'POST':
         title = request.POST.get('title')
         text = request.POST.get('text')
-        if title and text:  # Check if both title and text are provided
-            user = request.user
+        category = request.POST.get('recipient')  # Extract the selected category
+        print("Received values - title:", title, ", text:", text, ", category:", category)  # Debugging
+        if title and text and category:  # Check if title, text, and category are provided
+            # Get the related Naudotojai instance for the logged-in user
+            user = request.user.naudotojai
             today = date.today()
-            forum = Forumai.objects.create(pavadinimas=title)
-            Irasai.objects.create(tekstas=text, data=today, fk_Forumasid_Forumas=forum, fk_Naudotojasid_Naudotojas=user.naudotojai)
+            # Create the Irasai instance
+            Irasai.objects.create(
+                pavadinimas=title,
+                tekstas=text,
+                data=today,
+                fk_Naudotojasid_Naudotojas=user,
+                category=category  # Save the selected category
+            )
             messages.success(request, 'Topic created successfully.')
             return redirect('Forumas:forumasview')
         else:
-            messages.error(request, 'Please provide both title and text.')
+            messages.error(request, 'Please provide both title, text, and select a category.')
             return redirect('Forumas:forumasview')  # Redirect back to the forum view
     return render(request, 'Forumas.html', {})  # Render the forum page for GET requests
