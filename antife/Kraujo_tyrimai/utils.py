@@ -13,34 +13,36 @@ def get_graph():
     buffer.close()
     return graph
 
+import mplcursors
+
+import matplotlib.pyplot as plt
+import base64
+from io import BytesIO
+import numpy as np
+import mplcursors
+
 def get_plot(x, y, dates):
     plt.switch_backend('AGG')
-    plt.figure(figsize=(10, 5))
-    plt.title('Kraujo tyrimai')
-    
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.set_title('Kraujo tyrimai')
+
     # Plot the line
-    plt.plot(x, y, marker='o', linestyle='-')
-    
-    plt.xlabel('Data')
-    plt.ylabel('Fenilalaninas µmol/l')
-    
-    plt.xticks(rotation=45, ha='right')  # Set ticks with the calculated interval
-    # Customize y-axis ticks to range from 0 to 900 with increments of 100
-    plt.yticks(np.arange(0, 900, 100))
-    
-    # Set x-axis tick labels to the corresponding dates
-   
-    plt.gca().set_xticks(np.linspace(0, len(x) - 1, len(dates)))
-    plt.gca().set_xticklabels(dates)
-    
-    # Add shaded region for the "normal" range
-    plt.axhspan(120, 600, color='green', alpha=0.3)
-    
-    # Set y-axis limits explicitly
-    plt.ylim(0, 900)
-    
-    # Adjust figure margins
-    plt.subplots_adjust(bottom=0.2)  # Adjust bottom margin to make room for rotated labels
+    line, = ax.plot(x, y, marker='o', linestyle='-')
+
+    ax.set_xlabel('Data')
+    ax.set_ylabel('Fenilalaninas µmol/l')
+
+    ax.set_xticks(np.linspace(0, len(x) - 1, len(dates)))
+    ax.set_xticklabels(dates, rotation=45, ha='right')
+
+    ax.set_yticks(np.arange(0, 900, 100))
+
+    ax.axhspan(120, 600, color='green', alpha=0.3)
+
+    ax.set_ylim(0, 900)
+
+    mplcursors.cursor(line, hover=True).connect("add", lambda sel: sel.annotation.set_text(
+        f"Date: {dates[int(sel.target[0])]}, Fenilalaninas: {y[int(sel.target[0])]}"))
 
     # Save the plot to a buffer
     buffer = BytesIO()
@@ -52,3 +54,7 @@ def get_plot(x, y, dates):
     buffer.close()
 
     return graph
+
+
+
+

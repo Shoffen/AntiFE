@@ -122,4 +122,12 @@ class Migration(migrations.Migration):
                 ('fk_Valgymasid_Valgymas', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='homepage.valgymai')),
             ],
         ),
+        migrations.CreateModel(
+            name='Megstamiausi_receptai',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('fk_Receptasid_Receptas', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='homepage.Receptai')),
+                ('fk_Naudotojasid_Naudotojas', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='homepage.Naudotojai')),
+            ],
+        ),
     ]

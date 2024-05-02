@@ -11,5 +11,12 @@ urlpatterns = [
     path('valgiarastis/', views.valgiarastis, name='valgiarastis'),
     path('create_valgiarastis/', views.create_valgiarastis, name='create_valgiarastis'),
     path('receptai_list/<int:recipe_id>/', views.remove_recipe_view, name='remove_recipe'),
-    path('valgymai/', views.valgymai_list, name='valgymai_list'),
+    path('valgymai/', views.valgymai_open, name='valgymai_open'),
+    path('manoreceptai_list/', views.manoreceptai_list, name='manoreceptai_list'),
+    path('add_to_favorites/<int:recipe_id>/', views.add_to_favorites, name='add_to_favorites'),
+    path('delete_valgomasReceptas/<int:valgymo_receptas_id>/', views.delete_valgomasReceptas, name='delete_valgomasReceptas'),
+    path('delete_valgomasProduktas/<int:valgomas_produktas_id>/', views.delete_valgomasProduktas, name='delete_valgomasProduktas'),
+    path('add_valgymas/', views.add_new_valgymas, name='add_valgymas'),
+    path('saveCopy/', views.saveCopy, name='saveCopy'),
+    path('copyValgiarastis/', views.copyValgiarastis, name='copyValgiarastis'),
 ]
