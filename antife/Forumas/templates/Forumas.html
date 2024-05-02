@@ -36,6 +36,27 @@
                 <button type="button" class="segment-btn">Klausimai bendruomenei</button>
                 <button type="button" class="segment-btn">Klausimai moderatoriams</button>
             </div>
+            <div class="container d-flex justify-content-center">
+                <!-- Dropdown menus to select comment and post ordering -->
+                <div class="form-group d-flex">
+                    <!-- Dropdown for comment ordering -->
+                    <div class="mr-3">
+                        <label for="comment-order" class="mr-2">Rūšiuoti komentarus pagal:</label>
+                        <select class="form-control" id="comment-order">
+                            <option value="likes_desc">Populiariausi</option>
+                            <option value="date_desc">Naujausi</option>
+                        </select>
+                    </div>
+                    <!-- Dropdown for post ordering -->
+                    <div>
+                        <label for="post-order" class="mr-2">Rūšiuoti įrašus pagal:</label>
+                        <select class="form-control" id="post-order">
+                            <option value="likes_desc">Populiariausi</option>
+                            <option value="date_desc">Naujausi</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
         </form>
 
         <hr>
@@ -58,6 +79,7 @@
                 </div>
                 <!-- Comments section -->
                 <div id="comments_{{ irasas.id }}" style="display: none;">
+                    
                     <!-- Comment form -->
                     <form method="post" action="{% url 'Forumas:add_comment' irasas.id %}">
                         {% csrf_token %}
@@ -287,6 +309,41 @@ document.querySelectorAll('.segment-btn').forEach(function(button) {
         filterTopicsByCategory(mapButtonToCategory(categoryButtonText), document.querySelectorAll('.card')); // Pass button text and topic cards to filter function
     });
 });
+    // Function to handle comment ordering based on the selected option
+function orderComments() {
+    var selectedOption = document.getElementById('comment-order').value;
+    var topicCards = document.querySelectorAll('.card');
+
+    topicCards.forEach(function(card) {
+        var commentsContainer = card.querySelector('.comment-wrapper');
+        if (commentsContainer) {
+            var comments = Array.from(commentsContainer.children);
+            comments.sort(function(a, b) {
+                if (selectedOption === 'likes_desc') {
+                    // Sort by number of likes (descending)
+                    return parseInt(b.querySelector('.like-count').textContent.split(':')[1]) - parseInt(a.querySelector('.like-count').textContent.split(':')[1]);
+                } else if (selectedOption === 'date_desc') {
+                    // Sort by date (newest first)
+                    var dateA = new Date(a.querySelector('.comment-date').textContent);
+                    var dateB = new Date(b.querySelector('.comment-date').textContent);
+                    return dateB - dateA;
+                }
+            });
+            // Re-append sorted comments to the container
+            commentsContainer.innerHTML = '';
+            comments.forEach(function(comment) {
+                commentsContainer.appendChild(comment);
+            });
+        }
+    });
+}
+
+// Attach change event listener to the comment order dropdown menu
+document.getElementById('comment-order').addEventListener('change', orderComments);
+
+// Initially order comments based on the default selected option
+orderComments();
+
 
     // Function to toggle the display of the Quill editor
     function toggleEditor() {
