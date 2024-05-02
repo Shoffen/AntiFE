@@ -14,18 +14,19 @@ from django.contrib.auth import get_user_model
 
 from django.contrib import messages
 
-@login_required
 def delete_comment(request):
     if request.method == 'POST':
-        # Implement the logic to delete the comment
-        comment_id = request.POST.get('comment_id')
-        # Perform the deletion operation
-        
-        # Return an appropriate response, such as an empty HttpResponse
-        return HttpResponse(status=204)  # Status 204 means success with no content
+        # Get the comment_id from the URL parameters
+        comment_id = request.GET.get('comment_id')
+        # Retrieve the comment object from the database or return 404 if not found
+        comment = get_object_or_404(Komentarai, id=comment_id)
+        # Delete the comment
+        comment.delete()
+        # Return a success response
+        return JsonResponse({'message': 'Comment deleted successfully.'})
     else:
-        # Handle other request methods, if necessary
-        return HttpResponse(status=405)  # Method Not Allowed
+        # Return a method not allowed response for non-POST requests
+        return JsonResponse({'message': 'Method Not Allowed'}, status=405)
 
 @login_required
 def like_comment(request, pk):
