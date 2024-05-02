@@ -3,7 +3,7 @@ from homepage.models import Product, Receptai, Naudotojai, Valgymai, Valgiarasci
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
-from django.db.models import Q, F, Case, Value, When
+from django.db.models import Q, F, Case, Value, When, Count
 from django.contrib.auth import authenticate
 from django.contrib import messages
 from django.http import JsonResponse
@@ -18,6 +18,14 @@ from django.db.models import Exists, OuterRef
 
 logger = logging.getLogger(__name__)
 
+def panaudotireceptai(request):
+    # Get the count of each recipe used in Valgymo_receptas
+    recipe_counts = Valgymo_receptas.objects.values('fk_Receptasid_Receptas__pavadinimas').annotate(count=Count('fk_Receptasid_Receptas__pavadinimas'))
+
+    # Convert queryset to list of dictionaries
+    recipe_counts_list = list(recipe_counts.values('fk_Receptasid_Receptas__pavadinimas', 'count'))
+
+    return render(request, 'PanaudotiReceptai.html', {'recipe_counts': recipe_counts_list})
 
 def valgiarastis(request):
   naudotojas = Naudotojai.objects.get(user=request.user)
@@ -128,34 +136,46 @@ def create_recipe_view(request):
             
             total_phe = 0
             total_calories = 0  # Initialize total calories
+            total_protein = 0
+            
             # Create ingredient objects for the recipe
             for ingredient_name, ingredient_amount in zip(ingredient_names, ingredient_amounts):
                 # Get or create the product instance
                 product, created = Product.objects.get_or_create(name=ingredient_name)
-                # Create Recepto_produktai instance
+                
+                # Calculate calories and phenylalanine content
                 ingredient_amount_decimal = Decimal(ingredient_amount)
                 ingredient_calories = ingredient_amount_decimal * (product.calories / Decimal(100))
                 total_calories += ingredient_calories
                 ingredient_phe = ingredient_amount_decimal * (product.phenylalanine / Decimal(100))
                 total_phe += ingredient_phe
+                ingredient_protein = ingredient_amount_decimal * (product.protein) / Decimal((100))
+                total_protein += ingredient_protein
+                
+                # Create Recepto_produktai instance
                 Recepto_produktai.objects.create(
                     fk_Receptasid_Receptas=recipe,
                     fk_Produktasid_Produktas=product,
                     amount=ingredient_amount_decimal
                 )
                 
+            # Update recipe with total calories and phenylalanine content
             recipe.kalorijos = total_calories
             recipe.fenilalaninas = total_phe
+            recipe.baltymai = total_protein
             recipe.save()
+            
             # Return success response
             return JsonResponse({'message': 'Recipe created successfully!'})
+        
         except Exception as e:
             # Return error response if any exception occurs during creation
             return JsonResponse({'error': str(e)}, status=500)
 
     # If the request method is not POST, render the template
     products = Product.objects.all()
-    return render(request, 'receptukurimas.html', {'products': products})
+    product_names = [product.name for product in products]
+    return render(request, 'receptukurimas.html', {'products': products, 'product_names': product_names})
 
 def remove_recipe_view(request, recipe_id):
     if request.method == 'POST':
