@@ -29,6 +29,42 @@
       color: #3498db;
     }
 
+    .icon-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+    }
+
+    .icon-wrapper {
+      text-align: center;
+      margin-bottom: 20px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      width: calc(20% - 40px); /* Adjust width for multiple icons per row */
+      display: inline-block;
+    }
+
+    .icon {
+      width: 100px; /* Adjust the width of the icons */
+      height: 80px; /* Maintain aspect ratio */
+      margin-bottom: 5px; /* Add some spacing between the icon and its name */
+      cursor: pointer; /* Add cursor pointer to indicate it's clickable */
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add shadow */
+      transition: box-shadow 0.3s ease;
+    }
+
+    .icon-wrapper:hover {
+      transform: translateY(-5px);
+    }
+
+    .icon-wrapper.clicked .icon {
+      box-shadow: 0 0 20px rgba(31, 116, 228, 0.863); /* Increase shadow intensity */
+    }
+
+    .category-name {
+      font-size: 14px; /* Adjust font size for category names */
+    }
+
     .table {
       width: 100%;
       border-collapse: collapse;
@@ -92,27 +128,151 @@
 <body>
   <div class="container">
     <h1 class="blue-text">Produktų maistingumo peržiūra</h1>
+    <div class="icon-container">
+      <div class="icon-wrapper" data-category="Amino rūgštys">
+        <table style="display: inline-block;">
+          <tr>
+            <td>
+              <img src="{% static 'styles/aminorugstys.png' %}" alt="Amino Rugstys" class="icon">
+              <p class="category-name">Amino rūgštys</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="icon-wrapper" data-category="Maisto produktai su sumažintu baltymų kiekiu">
+        <table style="display: inline-block;">
+          <tr>
+            <td>
+              <img src="{% static 'styles/sumazintibaltymai.jpg' %}" alt="sumazinti baltymai" class="icon">
+              <p class="category-name">Maisto produktai su sumažintu baltymų kiekiu</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="icon-wrapper" data-category="Aliejai Riebalai">
+        <table style="display: inline-block;">
+          <tr>
+            <td>
+              <img src="{% static 'styles/aliejai.png' %}" alt="Aliejai Riebalai" class="icon">
+              <p class="category-name">Aliejai Riebalai</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="icon-wrapper" data-category="Grūdiniai">
+        <table style="display: inline-block;">
+          <tr>
+            <td>
+              <img src="{% static 'styles/grudai.jpg' %}" alt="Grūdiniai" class="icon">
+              <p class="category-name">Grūdiniai produktai</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="icon-wrapper" data-category="Kiti maisto produktai">
+        <table style="display: inline-block;">
+          <tr>
+            <td>
+              <img src="{% static 'styles/kitiproduktai.jpg' %}" alt="Kiti maisto produktai" class="icon">
+              <p class="category-name">Kiti maisto produktai</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="icon-wrapper" data-category="Kompensuojami produktai">
+        <table style="display: inline-block;">
+          <tr>
+            <td>
+              <img src="{% static 'styles/Kompensuojamiproduktai.jpg' %}" alt="Kompensuojami produktai" class="icon">
+              <p class="category-name">Kompensuojami produktai</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="icon-wrapper" data-category="Mėsa Paukštiena Žuvis Kiaušiniai">
+        <table style="display: inline-block;">
+          <tr>
+            <td>
+              <img src="{% static 'styles/meats1.png' %}" alt="Mėsa Paukštiena Žuvis Kiaušiniai" class="icon">
+              <p class="category-name">Mėsa Paukštiena Žuvis Kiaušiniai</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="icon-wrapper" data-category="Riešutai Sėklos">
+        <table style="display: inline-block;">
+          <tr>
+            <td>
+              <img src="{% static 'styles/nuts.jpg' %}" alt="Riešutai Sėklos" class="icon">
+              <p class="category-name">Riešutai Sėklos</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="icon-wrapper" data-category="Pienas ir jo produktai">
+        <table style="display: inline-block;">
+          <tr>
+            <td>
+              <img src="{% static 'styles/Pienoproduktai.jpg' %}" alt="Pienas ir jo produktai" class="icon">
+              <p class="category-name">Pienas ir jo produktai</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="icon-wrapper" data-category="Padažas">
+        <table style="display: inline-block;">
+          <tr>
+            <td>
+              <img src="{% static 'styles/sauces.jpg' %}" alt="Padažas" class="icon">
+              <p class="category-name">Padažai</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="icon-wrapper" data-category="Žolelės ir prieskoniai">
+        <table style="display: inline-block;">
+          <tr>
+            <td>
+              <img src="{% static 'styles/spices.jpg' %}" alt="Žolelės ir prieskoniai" class="icon">
+              <p class="category-name">Žolelės ir prieskoniai</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="icon-wrapper" data-category="Cukrus Cukraus produktai Medus">
+        <table style="display: inline-block;">
+          <tr>
+            <td>
+              <img src="{% static 'styles/sugarhoney.png' %}" alt="Cukrus Cukraus produktai Medus" class="icon">
+              <p class="category-name">Cukrus Medus Džemai</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="icon-wrapper" data-category="Vaisiai">
+        <table style="display: inline-block;">
+          <tr>
+            <td>
+              <img src="{% static 'styles/fruits.jpg' %}" alt="Vaisiai" class="icon">
+              <p class="category-name">Vaisiai</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="icon-wrapper" data-category="Daržovė">
+        <table style="display: inline-block;">
+          <tr>
+            <td>
+              <img src="{% static 'styles/Vegetables.jpeg' %}" alt="Daržovė" class="icon">
+              <p class="category-name">Daržovės</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
 
     <form action="" method="GET" class="search-form" id="searchForm">
-      <select name="category">
-        <option value="">Visi produktai</option>
-        <option value="Amino rūgštys">Amino rūgštys</option>
-        <option value="Maisto produktai su sumažintu baltymų kiekiu">Maisto produktai su sumažintu baltymų kiekiu</option>
-        <option value="Kompensuojami produktai">Kompensuojami produktai</option>
-        <option value="Aliejai Riebalai">Aliejai Riebalai</option>
-        <option value="Cukrus Cukraus produktai Medus">Cukrus Cukraus produktai Medus</option>
-        <option value="Daržovė">Daržovė</option>
-        <option value="Grūdiniai">Grūdiniai</option>
-        <option value="Kiti maisto produktai">Kiti maisto produktai</option>
-        <option value="Padažas">Padažas</option>
-        <option value="Pienas ir jo produktai">Pienas ir jo produktai</option>
-        <option value="Riešutai Sėklos">Riešutai Sėklos</option>
-        <option value="Vaisiai">Vaisiai</option>
-        <option value="Žolelės ir prieskoniai">Žolelės ir prieskoniai</option>
-        <option value="Mėsa Paukštiena Žuvis Kiaušiniai">Mėsa Paukštiena Žuvis Kiaušiniai</option>
-      </select>
       <input type="text" name="query" class="search-input" placeholder="Ieškoti pagal produkto vardą">
-      <button type="submit" class="search-button">Ieškoti</button>
     </form>
 
     <table class="table" id="productTable">
@@ -129,7 +289,7 @@
       </thead>
       <tbody>
         {% for product in products %}
-          <tr>
+          <tr data-category="{{ product.category }}">
             <td class="{% if product.color == 'Raudona' %}high{% elif product.color == 'Geltona' %}medium{% else %}low{% endif %}">
               {{ product.name }}
             </td>
@@ -153,22 +313,69 @@
     document.addEventListener('DOMContentLoaded', function() {
       const searchInput = document.querySelector('.search-input');
       const productTable = document.getElementById('productTable');
+      const iconContainer = document.querySelector('.icon-container');
+      const iconWrappers = document.querySelectorAll('.icon-wrapper');
+  
+      iconWrappers.forEach(wrapper => {
+        wrapper.addEventListener('click', function(event) {
+          const isClicked = wrapper.classList.contains('clicked');
+          iconWrappers.forEach(item => {
+            item.classList.remove('clicked');
+          });
+          if (!isClicked) {
+            wrapper.classList.add('clicked');
+          } else {
+            // Remove category parameter from the URL and reload the page
+            const url = new URL(window.location.href);
+            url.searchParams.delete('category');
+            window.location.href = url.href;
+          }
+        });
+      });
+  
+      // Add click event listener to each icon
+      iconContainer.addEventListener('click', function(event) {
+        const target = event.target;
+        if (target.tagName === 'IMG') {
+          const category = target.parentElement.getAttribute('data-category');
+          if (category) {
+            // Remove category and query parameters from the URL
+            const url = new URL(window.location.href);
+            url.searchParams.delete('category');
+            url.searchParams.delete('query');
+            window.history.replaceState({}, '', url);
+  
+            // Filter products based on the selected category
+            const rows = productTable.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+              const rowCategory = row.getAttribute('data-category');
+              if (rowCategory === category || category === 'Visi produktai') {
+                row.style.display = ''; // Show rows that match the selected category
+              } else {
+                row.style.display = 'none'; // Hide rows that don't match the selected category
+              }
+            });
+          }
+        }
+      });
   
       searchInput.addEventListener('input', function(event) {
-        event.preventDefault(); //kai nebeliks buttono tai istrint reiks
-  
+        event.preventDefault();
         const formData = new FormData(document.getElementById('searchForm'));
         const query = formData.get('query');
   
         if (query) {
+          // Remove category parameter from the URL
+          const url = new URL(window.location.href);
+          url.searchParams.delete('category');
+          window.history.replaceState({}, '', url);
+  
           fetch(`?query=${encodeURIComponent(query)}`)
             .then(response => response.text())
             .then(data => {
-              //nukopijuoja visa page
               const tempElement = document.createElement('div');
               tempElement.innerHTML = data;
-              // is to viso page pasiima tik tbody updatint
-              const rows = tempElement.querySelectorAll('tbody');
+              const rows = tempElement.querySelectorAll('tbody tr');
               while (productTable.rows.length > 1) {
                 productTable.deleteRow(1);
               }
@@ -182,7 +389,7 @@
         }
       });
     });
-  </script>  
+  </script>
   
-  </body>
+</body>
 {% endblock %}

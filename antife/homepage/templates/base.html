@@ -59,6 +59,7 @@
             {% if request.user.is_authenticated %}
             <a class="dropdown-item" href="{% url 'mityba:valgiarastis' %}">Valgiaraštis</a>
             <a class="dropdown-item" href="{% url 'mityba:manoreceptai_list' %}">Mano Receptai</a>
+            <a class="dropdown-item" href="{% url 'mityba:panaudoti_receptai' %}">Panaudoti Receptai</a>
             {% else %}
             {% endif %}
           </div>
