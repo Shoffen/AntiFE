@@ -2,6 +2,7 @@ from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from homepage.models import Product, Receptai, Naudotojai, Valgymai, Valgiarasciai, Recepto_produktai, Naudotojo_receptai, Megstamiausi_receptai, Valgymo_receptas, Valgomas_produktas
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q, F, Case, Value, When
 from django.contrib.auth import authenticate
 from django.contrib import messages
@@ -13,6 +14,7 @@ from django.core.serializers import serialize
 import json
 import logging, webbrowser
 from django.urls import reverse
+from django.db.models import Exists, OuterRef
 
 logger = logging.getLogger(__name__)
 
@@ -210,6 +212,7 @@ def valgymai_list(request):
     naudotojas = Naudotojai.objects.get(user=request.user)
 
     if selected_date:
+        valgiarastis = get_object_or_404(Valgiarasciai, fk_Naudotojasid_Naudotojas=naudotojas, data=selected_date)
         valgymai_list = Valgymai.objects.filter(
             fk_Valgiarastisid_Valgiarastis__data=selected_date,
             fk_Valgiarastisid_Valgiarastis__fk_Naudotojasid_Naudotojas=naudotojas
@@ -230,6 +233,9 @@ def valgymai_list(request):
             valgymai_list.total_fenilalaninas+=valgomasproduktas.total_fenilalaninas
             valgomasproduktas.total_baltymas = round(valgomasproduktas.kiekis /100 * Decimal(valgomasproduktas.fk_Produktasid_Produktas.protein) , 1)
             valgymai_list.total_baltymas+=valgomasproduktas.total_baltymas
+    valgiarastis.bendras_fenilalaninas = valgymai_list.total_fenilalaninas  
+    valgiarastis.bendras_baltymas = valgymai_list.total_baltymas   
+    valgiarastis.save()
 
     context = {
         'valgymai_list': valgymai_list,
@@ -256,4 +262,84 @@ def delete_valgomasProduktas(request, valgomas_produktas_id):
     if request.method == 'POST':
         valgomas_produktas.delete()
         return valgymai_list(request)
+    return valgymai_list(request)
+
+def add_new_valgymas(request):
+    if request.method == 'GET':
+        selected_id = request.GET.get('selectedID')
+        selected_name = request.GET.get('selectedName')
+        amount = request.GET.get('amount')
+        valgymoNr = request.GET.get('buttonIndex')
+        selected_date = request.session.get('selectedDate') 
+        naudotojas = Naudotojai.objects.get(user=request.user)
+        valgiarastis = get_object_or_404(Valgiarasciai, fk_Naudotojasid_Naudotojas=naudotojas, data=selected_date)
+        if valgymoNr == '1':
+            tipas = "Pusryčiai"
+        elif valgymoNr == '2':
+            tipas = "Pietūs"
+        elif valgymoNr == '3':
+            tipas = "Vakarienė"
+        else:
+            tipas = "Papildomi"
+        valgymas = Valgymai.objects.get(fk_Valgiarastisid_Valgiarastis=valgiarastis, tipas=tipas)
+
+        try: # tikrinam ar receptas čia
+            receptas = Receptai.objects.get(id=selected_id, pavadinimas=selected_name)
+            if not Valgymo_receptas.objects.filter(fk_Receptasid_Receptas=receptas, fk_Valgymasid_Valgymas=valgymas).exists():
+                Valgymo_receptas.objects.create(
+                    fk_Receptasid_Receptas=receptas,
+                    fk_Valgymasid_Valgymas=valgymas,
+                    kiekis=amount
+                )
+        except Receptai.DoesNotExist:
+            try:
+                produktas = Product.objects.get(id=selected_id, name=selected_name)
+                if not Valgomas_produktas.objects.filter(fk_Produktasid_Produktas=produktas, fk_Valgymasid_Valgymas=valgymas).exists():
+                    Valgomas_produktas.objects.create(
+                        fk_Produktasid_Produktas=produktas,
+                        fk_Valgymasid_Valgymas=valgymas,
+                        kiekis=amount
+                    )
+            except Product.DoesNotExist:
+                return valgymai_list(request)
+
+    return valgymai_list(request)
+
+def saveCopy(request):
+    selected_date = request.GET.get('selectedDate')
+    print(selected_date)
+    request.session['copyDate'] = selected_date
+    return render(request, 'valgiarastis.html')
+
+def copyValgiarastis(request):
+    naudotojas = Naudotojai.objects.get(user=request.user)
+    copyDate = request.session.get('copyDate')
+    valgiarastisCopy = get_object_or_404(Valgiarasciai, fk_Naudotojasid_Naudotojas=naudotojas, data=copyDate)
+    pasteDate = request.session.get('selectedDate')
+    valgiarastisPaste = get_object_or_404(Valgiarasciai, fk_Naudotojasid_Naudotojas=naudotojas, data=pasteDate)
+    print(valgiarastisCopy.data)
+    print(valgiarastisPaste.data)
+    valgiarastisPaste.valgymai_set.all().delete()
+    tipai = ["Pusryčiai", "Pietūs", "Vakarienė", "Papildomi"]
+    for tipas in tipai:
+        valgymas = Valgymai.objects.create(
+            tipas=tipas,
+            fk_Valgiarastisid_Valgiarastis=valgiarastisPaste
+        )
+        receptai_to_copy = Valgymo_receptas.objects.filter(fk_Valgymasid_Valgymas__fk_Valgiarastisid_Valgiarastis=valgiarastisCopy, fk_Valgymasid_Valgymas__tipas=tipas)
+        for receptas in receptai_to_copy:
+            Valgymo_receptas.objects.create(
+                fk_Receptasid_Receptas=receptas.fk_Receptasid_Receptas,
+                fk_Valgymasid_Valgymas=valgymas,
+                kiekis=receptas.kiekis
+            )
+        produktai_to_copy = Valgomas_produktas.objects.filter(fk_Valgymasid_Valgymas__fk_Valgiarastisid_Valgiarastis=valgiarastisCopy, fk_Valgymasid_Valgymas__tipas=tipas)
+        
+        for prod in produktai_to_copy:
+            Valgomas_produktas.objects.create(
+                fk_Produktasid_Produktas=prod.fk_Produktasid_Produktas,
+                fk_Valgymasid_Valgymas=valgymas,
+                kiekis=prod.kiekis
+            )
+
     return valgymai_list(request)

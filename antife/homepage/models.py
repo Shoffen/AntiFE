@@ -60,8 +60,8 @@ class Megstamiausi_receptai(models.Model):
 
 class Valgiarasciai(models.Model):
     diena = models.IntegerField()
-    bendras_fenilalaninas = models.DecimalField(max_digits=5, decimal_places=2)
-    bendras_baltymas = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
+    bendras_fenilalaninas = models.DecimalField(max_digits=10, decimal_places=2)
+    bendras_baltymas = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
     data = models.DateField()
     fk_Naudotojasid_Naudotojas = models.ForeignKey(Naudotojai, on_delete=models.CASCADE)
 
