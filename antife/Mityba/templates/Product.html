@@ -17,7 +17,7 @@
     }
 
     .container {
-      max-width: 900px;
+      max-width: 1300px;
       margin: 20px auto;
       background-color: #fff;
       padding: 20px;
@@ -89,12 +89,13 @@
 
 </head>
 
+<body>
   <div class="container">
     <h1 class="blue-text">Produktų maistingumo peržiūra</h1>
 
-    <form action="" method="GET" class="search-form">
+    <form action="" method="GET" class="search-form" id="searchForm">
       <select name="category">
-        <option value="">Kategorijos</option>
+        <option value="">Visi produktai</option>
         <option value="Amino rūgštys">Amino rūgštys</option>
         <option value="Maisto produktai su sumažintu baltymų kiekiu">Maisto produktai su sumažintu baltymų kiekiu</option>
         <option value="Kompensuojami produktai">Kompensuojami produktai</option>
@@ -114,7 +115,7 @@
       <button type="submit" class="search-button">Ieškoti</button>
     </form>
 
-    <table class="table">
+    <table class="table" id="productTable">
       <thead>
         <tr>
           <th>Pavadinimas</th>
@@ -122,7 +123,8 @@
           <th>Riebalai</th>
           <th>Angliavandeniai</th>
           <th>Baltymai</th>
-          <th>Fenilalaninas</th>
+          <th>Fenilalaninas(mg)</th>
+          <th>Namų matas(svoris) fenilalaninas</th>
         </tr>
       </thead>
       <tbody>
@@ -136,9 +138,51 @@
             <td>{{ product.fiber }}</td>
             <td>{{ product.protein }}</td>
             <td>{{ product.phenylalanine }}</td>
+            <td>
+                {{ product.measure }}
+                {% if product.measure != "-" %}
+                 ({{ product.homeWeight }}g) {{ product.homePhenylalanine}}(mg) Phe
+                {% endif %}
+            </td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const searchInput = document.querySelector('.search-input');
+      const productTable = document.getElementById('productTable');
+  
+      searchInput.addEventListener('input', function(event) {
+        event.preventDefault(); //kai nebeliks buttono tai istrint reiks
+  
+        const formData = new FormData(document.getElementById('searchForm'));
+        const query = formData.get('query');
+  
+        if (query) {
+          fetch(`?query=${encodeURIComponent(query)}`)
+            .then(response => response.text())
+            .then(data => {
+              //nukopijuoja visa page
+              const tempElement = document.createElement('div');
+              tempElement.innerHTML = data;
+              // is to viso page pasiima tik tbody updatint
+              const rows = tempElement.querySelectorAll('tbody');
+              while (productTable.rows.length > 1) {
+                productTable.deleteRow(1);
+              }
+              rows.forEach(row => {
+                productTable.appendChild(row);
+              });
+            })
+            .catch(error => {
+              console.error('Error:', error);
+            });
+        }
+      });
+    });
+  </script>  
+  
+  </body>
 {% endblock %}
