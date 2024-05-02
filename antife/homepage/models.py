@@ -35,13 +35,11 @@ class Receptai(models.Model):
     baltymai = models.FloatField(default=0.0)
     aprasas = models.CharField(max_length=255)
 
-class Forumai(models.Model):
-    pavadinimas = models.CharField(max_length=255)
-
 class Irasai(models.Model):
-    tekstas = models.CharField(max_length=255)
+    pavadinimas = models.CharField(max_length=255, default="Pavadinimas")
+    tekstas = models.CharField(max_length=2555)
     data = models.DateField()
-    fk_Forumasid_Forumas = models.ForeignKey(Forumai, on_delete=models.CASCADE)
+    category = models.CharField(max_length=50,default="Daktarui") # New field for category
     fk_Naudotojasid_Naudotojas = models.ForeignKey(Naudotojai, on_delete=models.CASCADE)
 
 class Kraujo_tyrimai(models.Model):

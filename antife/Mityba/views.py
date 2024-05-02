@@ -291,6 +291,7 @@ def add_new_valgymas(request):
         amount = request.GET.get('amount')
         valgymoNr = request.GET.get('buttonIndex')
         selected_date = request.session.get('selectedDate') 
+        print(selected_date)
         naudotojas = Naudotojai.objects.get(user=request.user)
         valgiarastis = get_object_or_404(Valgiarasciai, fk_Naudotojasid_Naudotojas=naudotojas, data=selected_date)
         if valgymoNr == '1':
@@ -326,17 +327,21 @@ def add_new_valgymas(request):
     return valgymai_list(request)
 
 def saveCopy(request):
-    selected_date = request.GET.get('selectedDate')
+    selected_date = request.session.get('selectedDate')
     print(selected_date)
     request.session['copyDate'] = selected_date
-    return render(request, 'valgiarastis.html')
+    return valgiarastis(request)
 
 def copyValgiarastis(request):
     naudotojas = Naudotojai.objects.get(user=request.user)
+    print("copyDate")
     copyDate = request.session.get('copyDate')
+    print(copyDate)
     valgiarastisCopy = get_object_or_404(Valgiarasciai, fk_Naudotojasid_Naudotojas=naudotojas, data=copyDate)
     pasteDate = request.session.get('selectedDate')
     valgiarastisPaste = get_object_or_404(Valgiarasciai, fk_Naudotojasid_Naudotojas=naudotojas, data=pasteDate)
+    print(copyDate)
+    print(pasteDate)
     print(valgiarastisCopy.data)
     print(valgiarastisPaste.data)
     valgiarastisPaste.valgymai_set.all().delete()

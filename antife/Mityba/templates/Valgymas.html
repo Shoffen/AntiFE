@@ -356,11 +356,14 @@ function handleAddItemClick(event) {
 function copyMealPlan() {
   localStorage.setItem('copyDate', selectedDate);
   const copyDate = localStorage.getItem('copyDate');
+  console.log(copyDate);
   alert("Mitybos planas nukopijuotas!");
-  window.location.href = "{% url 'mityba:valgiarastis' %}";
+  window.location.href = "{% url 'mityba:saveCopy' %}";
 }
 //perkuriam dabartini valgiarasti pagal kita
 function pasteMealPlan() {
+  console.log(copyDate);
+  console.log(selectedDate);
   document.getElementById('copyDateOutput').textContent = copyDate;
   const confirmationDialog = document.getElementById('confirmationDialog');
   confirmationDialog.classList.remove('hidden');
