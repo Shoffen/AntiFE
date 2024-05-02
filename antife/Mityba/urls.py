@@ -1,6 +1,5 @@
 from django.urls import path
 from . import views
-from .views import product
 
 app_name = 'Mityba'
 
@@ -20,6 +19,4 @@ urlpatterns = [
     path('add_valgymas/', views.add_new_valgymas, name='add_valgymas'),
     path('saveCopy/', views.saveCopy, name='saveCopy'),
     path('copyValgiarastis/', views.copyValgiarastis, name='copyValgiarastis'),
-    path('receptukurimas/', views.create_recipe_view, name='create_recipe'),
-    path('panaudotireceptai/', views.panaudotireceptai, name='panaudoti_receptai'),
 ]
