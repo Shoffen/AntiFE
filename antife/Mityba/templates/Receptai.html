@@ -13,10 +13,9 @@
             <thead>
                 <tr>
                     <th>Pavadinimas</th>
-                    <th>Kalorijos (kcal)</th>
+                    <th>Kalorijos</th>
                     <th>Fenilalaninas</th>
-                    <th>Baltymai (g)</th>
-                    <th></th>
+                    <th>  </th>
                 </tr>
             </thead>
             <tbody>
@@ -25,7 +24,6 @@
                         <td class="name-cell" data-toggle="aprasas-{{ forloop.counter }}" data-ingredientai="ingredientai-{{ forloop.counter }}">{{ receptas.pavadinimas }}</td>
                         <td>{{ receptas.kalorijos }}</td>
                         <td>{{ receptas.fenilalaninas }}</td>
-                        <td>{{ receptas.baltymai }}</td>
                         <td><button class="favorite-recipe-btn" data-recipe-id="{{ receptas.id }}"><i class="fa fa-star{% if receptas.id in user_favorite_ids %} fa-star-blue{% endif %}"></i></button></td>
                     </tr>
                     <tr>

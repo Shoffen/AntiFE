@@ -187,7 +187,7 @@ h3 {
               <td>{{ valgomasreceptas.total_fenilalaninas }} </td>
               <td class="styled-cell"><form action="{% url 'mityba:delete_valgomasReceptas' valgymo_receptas_id=valgomasreceptas.id %}" method="post">
                 {% csrf_token %}
-                <button type="submit">Trinti</button>
+                <button type="submit">Delete</button>
             </form></td>
             </tr>
           {% endfor %}
@@ -199,14 +199,14 @@ h3 {
               <td>{{ valgomasproduktas.total_fenilalaninas }} </td>
               <td class="styled-cell"><form action="{% url 'mityba:delete_valgomasProduktas' valgomas_produktas_id=valgomasproduktas.id %}" method="post">
                 {% csrf_token %}
-                <button type="submit">Trinti</button>
+                <button type="submit">Delete</button>
             </form></td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
       {% endif %}
-      <button class="add-new-button" data-index="{{ forloop.counter }}">Pridėti</button> 
+      <button class="add-new-button" data-index="{{ forloop.counter }}">Add New</button> 
       <div class="add-new-form hidden" data-index="{{ forloop.counter }}">
         <input type="text" class="searchInput" placeholder="Paieška">
         <br>
@@ -216,7 +216,7 @@ h3 {
         <input type="number" class="amountInput" placeholder="Kiekis gramais">
         <br>
         <div class="amountWarning hidden">Privalote įvesti kiekį!</div>
-        <button class="add-item-button">Pridėti</button>
+        <button class="add-item-button">Prideti</button>
       </div>
     {% endfor %}
     
