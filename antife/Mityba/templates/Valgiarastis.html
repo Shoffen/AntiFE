@@ -1,10 +1,27 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 <head>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar/index.global.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.0/locales/lt.js"></script>
     <style>
+    body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-image: url("{% static 'styles/paveiksleliai/back.jpg' %}");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+  .valgymo-container {
+  background-color: #f5f5f5;
+  padding: 15px; /* Add some padding for spacing (optional) */
+  border-radius: 5px; /* Rounded corners (optional) */
+  margin-bottom: 20px;
+}
+
     .fc-event-title {
         font-size: 20px;
         font-weight: bold;
@@ -17,10 +34,12 @@
     }
     </style>
 </head>
-
+<body>
+<div class="valgymo-container">
 <div id="calendar"></div>
 <button id="createBtn" name="create_button" onclick="createValgiarastis()" class="btn btn-primary" style="display: none; width: 200px; margin: auto;">Atidaryti</button>
-
+</div>
+</body>
 <script>
     const createValgiarastisUrl = document.getElementById("createBtn").getAttribute("data-url");
 

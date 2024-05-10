@@ -15,6 +15,7 @@ import json
 import logging, webbrowser
 from django.urls import reverse
 from django.db.models import Exists, OuterRef
+from django.db import models
 
 logger = logging.getLogger(__name__)
 
@@ -243,24 +244,44 @@ def valgymai_list(request):
     valgymai_list.total_fenilalaninas = 0
     valgymai_list.total_baltymas = 0
     for valgymas in valgymai_list:
+        valgymasBalt = 0
+        valgymasPhe = 0
         for valgomasreceptas in valgymas.valgymo_receptas_set.all():
-            valgomasreceptas.total_fenilalaninas = round(valgomasreceptas.kiekis /100 * Decimal(valgomasreceptas.fk_Receptasid_Receptas.fenilalaninas) , 1)
+            receptas = valgomasreceptas.fk_Receptasid_Receptas
+            total_weight = Recepto_produktai.objects.filter(fk_Receptasid_Receptas=receptas).aggregate(total_weight=models.Sum('amount'))['total_weight']
+            valgomasreceptas.total_fenilalaninas = round(valgomasreceptas.kiekis /total_weight * Decimal(valgomasreceptas.fk_Receptasid_Receptas.fenilalaninas) , 1)
+            valgymasPhe += valgomasreceptas.total_fenilalaninas
             valgymai_list.total_fenilalaninas+=valgomasreceptas.total_fenilalaninas
-            valgomasreceptas.total_baltymas = round(valgomasreceptas.kiekis /100 * Decimal(valgomasreceptas.fk_Receptasid_Receptas.baltymai) , 1)
+            valgomasreceptas.total_baltymas = round(valgomasreceptas.kiekis /total_weight * Decimal(valgomasreceptas.fk_Receptasid_Receptas.baltymai) , 1)
+            valgymasBalt += valgomasreceptas.total_baltymas
             valgymai_list.total_baltymas+=valgomasreceptas.total_baltymas
         for valgomasproduktas in valgymas.valgomas_produktas_set.all():
             valgomasproduktas.total_fenilalaninas = round(valgomasproduktas.kiekis /100 * Decimal(valgomasproduktas.fk_Produktasid_Produktas.phenylalanine) , 1)
+            valgymasPhe += valgomasproduktas.total_fenilalaninas
             valgymai_list.total_fenilalaninas+=valgomasproduktas.total_fenilalaninas
             valgomasproduktas.total_baltymas = round(valgomasproduktas.kiekis /100 * Decimal(valgomasproduktas.fk_Produktasid_Produktas.protein) , 1)
+            valgymasBalt += valgomasproduktas.total_baltymas
             valgymai_list.total_baltymas+=valgomasproduktas.total_baltymas
+        valgymas.bendras_fenilalaninas = valgymasPhe
+        valgymas.bendras_baltymas = valgymasBalt
+        valgymas.save()
     valgiarastis.bendras_fenilalaninas = valgymai_list.total_fenilalaninas  
     valgiarastis.bendras_baltymas = valgymai_list.total_baltymas   
     valgiarastis.save()
 
+    specific_naudotojas_receptai = Naudotojo_receptai.objects.filter(fk_Naudotojasid_Naudotojas=naudotojas)
+    receptai_ids = specific_naudotojas_receptai.values_list('fk_Receptasid_Receptas', flat=True)
+
+    adminas = Naudotojai.objects.filter(level=2)
+    receptai_foradmin = Naudotojo_receptai.objects.filter(fk_Naudotojasid_Naudotojas__in=adminas)
+    receptai_ids_level_2 = receptai_foradmin.values_list('fk_Receptasid_Receptas', flat=True)
+
+    all_receptai_ids =  list(receptai_ids_level_2)+ list(receptai_ids)
+
     context = {
-        'valgymai_list': valgymai_list,
-        'all_receptai': serialize('json', Receptai.objects.all()),
-        'all_products': serialize('json', Product.objects.all())
+    'valgymai_list': valgymai_list,
+    'all_receptai': serialize('json', Receptai.objects.filter(id__in=all_receptai_ids)),
+    'all_products': serialize('json', Product.objects.all())
     }
     return render(request, 'valgymas.html', context)
 
