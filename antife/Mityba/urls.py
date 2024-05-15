@@ -22,4 +22,7 @@ urlpatterns = [
     path('copyValgiarastis/', views.copyValgiarastis, name='copyValgiarastis'),
     path('receptukurimas/', views.create_recipe_view, name='create_recipe'),
     path('panaudotireceptai/', views.panaudotireceptai, name='panaudoti_receptai'),
+    path('receptai_list/<int:recipe_id>/edit/', views.edit_recipe, name='edit_recipe'),
+    path('receptai_listt/<int:recipe_id>/', views.toggle_recipe_visibility, name='toggle_recipe_visibility'),
+
 ]

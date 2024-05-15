@@ -31,14 +31,14 @@
 
     .icon-container {
       display: flex;
+      justify-content: center;
       flex-wrap: wrap;
-      justify-content: space-around;
     }
 
     .icon-wrapper {
-      text-align: center;
-      margin-bottom: 20px;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        text-align: center;
+        flex-basis: calc(100% / 7 - 20px); /* Adjust the width of each icon wrapper to fit 7 icons in a row */
     }
 
     .icon {
@@ -51,8 +51,8 @@
       transition: box-shadow 0.3s ease;
     }
 
-    .icon-wrapper:hover {
-      transform: translateY(-5px);
+    .icon-wrapper:hover .category-name {
+      display: block;
     }
 
     .icon-wrapper.clicked .icon {
@@ -60,7 +60,7 @@
     }
 
     .category-name {
-      font-size: 14px; /* Adjust font size for category names */
+      display: none;
     }
 
     .table {
@@ -145,10 +145,6 @@
         <img src="{% static 'styles/grudai.jpg' %}" alt="Grūdiniai" class="icon">
         <p class="category-name">Grūdiniai produktai</p>
       </div>
-    </div>
-    
-    <div class="icon-container">
-      <!-- Display products from Kiti maisto produktai to Riešutai Sėklos -->
       <div class="icon-wrapper" data-category="Kiti maisto produktai">
         <img src="{% static 'styles/kitiproduktai.jpg' %}" alt="Kiti maisto produktai" class="icon">
         <p class="category-name">Kiti maisto produktai</p>
@@ -165,10 +161,6 @@
         <img src="{% static 'styles/nuts.jpg' %}" alt="Riešutai Sėklos" class="icon">
         <p class="category-name">Riešutai Sėklos</p>
       </div>
-    </div>
-    
-    <div class="icon-container">
-      <!-- Display products from Pienas ir jo produktai to Daržovės -->
       <div class="icon-wrapper" data-category="Pienas ir jo produktai">
         <img src="{% static 'styles/Pienoproduktai.jpg' %}" alt="Pienas ir jo produktai" class="icon">
         <p class="category-name">Pienas ir jo produktai</p>
@@ -194,6 +186,8 @@
         <p class="category-name">Daržovės</p>
       </div>
     </div>
+    
+
 
     <form action="" method="GET" class="search-form" id="searchForm">
       <input type="text" name="query" class="search-input" placeholder="Ieškoti pagal produkto vardą">

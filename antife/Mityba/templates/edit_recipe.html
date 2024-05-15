@@ -17,14 +17,14 @@
 </style>   
 
 <div class="container">
-    <h2>Sukurkite receptą</h2>
+    <h2>Redaguoti receptą</h2>
 
     <form id="recipeForm">
         {% csrf_token %}
         
         <div class="form-group">
             <label for="recipeName">Recepto pavadinimas:</label>
-            <input type="text" id="recipeName" name="recipeName" class="form-control" required>
+            <input type="text" id="recipeName" name="recipeName" class="form-control" value="{{ recipe.pavadinimas }}" required>
         </div>
 
         <div class="row">
@@ -43,18 +43,38 @@
             </div>
             <div class="col-sm-6">
                 <div id="ingredientList">
-                    <!-- Existing ingredient fields will be populated here -->
+                    <!-- Populate existing ingredient fields -->
+                    {% for recepto_produktai in recipe.recepto_produktai_set.all %}
+                    <div class="ingredient">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="ingredient{{ forloop.counter }}">Ingredientas:</label>
+                                    <input type="text" id="ingredient{{ forloop.counter }}" name="ingredient[]" class="form-control" value="{{ recepto_produktai.fk_Produktasid_Produktas.name }}" required>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label for="amount{{ forloop.counter }}">Kiekis (gramais):</label>
+                                    <input type="number" id="amount{{ forloop.counter }}" name="amount[]" class="form-control" value="{{ recepto_produktai.amount }}" required>
+                                </div>
+                            </div>
+                            <div class="col-sm-2">
+                                <button type="button" class="btn btn-danger removeIngredient">✕</button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
-                
             </div>
         </div>
 
         <div class="form-group">
             <label for="recipeSummary">Aprašas:</label>
-            <textarea id="recipeSummary" name="recipeSummary" class="form-control" rows="4" style="white-space: pre-line;"></textarea>
+            <textarea id="recipeSummary" name="recipeSummary" class="form-control" rows="4" style="white-space: pre-line;">{{ recipe.aprasas }}</textarea>
         </div>
 
-        <button type="submit" class="btn btn-success">Sukurti receptą</button>
+        <button type="submit" class="btn btn-success">Atnaujinti receptą</button>
     </form>
 </div>
 
@@ -67,15 +87,10 @@
 
         searchIngredientInput.addEventListener('input', function (event) {
             const query = event.target.value.trim();
-            const dropdownMenu = document.querySelector('.dropdown-menu');
-
-            // Calculate the top position based on the search input's position
-            const searchInputRect = searchIngredientInput.getBoundingClientRect();
-            dropdownMenu.style.top = (searchInputRect.bottom + window.pageYOffset) + 'px';
 
             ingredientOptions.forEach(option => {
                 const productName = option.textContent;
-                if (productName.includes(query)) {
+                if (productName.toLowerCase().includes(query.toLowerCase())) {
                     option.style.display = '';
                 } else {
                     option.style.display = 'none';
@@ -130,8 +145,6 @@
             });
         }
 
-        
-
         ingredientList.addEventListener('click', function (event) {
             if (event.target.classList.contains('removeIngredient')) {
                 event.target.closest('.ingredient').remove();
@@ -161,16 +174,15 @@
             .then(data => {
                 console.log('Server response:', data);
                 if (data.message) {
-                    alert('Recipe created successfully!');
-                    window.location.href = '/mityba/receptai_list';
+                    alert('Recipe updated successfully!');
+                    window.location.href = '/mityba/manoreceptai_list';
                 } else {
-                    alert('Failed to create recipe.');
+                    alert('Failed to update recipe.');
                 }
             })
-            .catch(error => console.error('Error creating recipe:', error));
+            .catch(error => console.error('Error updating recipe:', error));
         });
     });
 </script>
 
-    
 {% endblock %}

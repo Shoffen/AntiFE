@@ -17,6 +17,7 @@ from django.urls import reverse
 from django.db.models import Exists, OuterRef
 from django.db import models
 
+
 logger = logging.getLogger(__name__)
 
 def panaudotireceptai(request):
@@ -48,7 +49,7 @@ def product(request):
 
 def receptai_list(request):
     # Get all recipes
-    all_receptai = Receptai.objects.all()
+    all_receptai = Receptai.objects.filter(visible=True)
     
     # Get the current user's favorite recipe IDs
     user_favorite_ids = []
@@ -62,7 +63,61 @@ def receptai_list(request):
     
     # Render the template with sorted recipes
     return render(request, 'Receptai.html', {'receptai_list': sorted_receptai, 'user_favorite_ids': user_favorite_ids})
-    
+
+@csrf_exempt
+def toggle_recipe_visibility(request, recipe_id):
+    if request.method == 'POST':
+        try:
+            recipe = Receptai.objects.get(id=recipe_id)
+            recipe.visible = not recipe.visible
+            recipe.save()
+            return JsonResponse({'success': True})
+        except Receptai.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Recipe not found'}, status=404)
+    else:
+        return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
+
+@login_required    
+def edit_recipe(request, recipe_id):
+    # Fetch the recipe from the database using the recipe_id
+    recipe = Receptai.objects.get(pk=recipe_id)
+    # Pass the recipe object to the template
+    products = Product.objects.all()
+    product_names = [product.name for product in products]
+
+    if request.method == 'POST':
+        try:
+            # Extract form data
+            recipe_name = request.POST.get('recipeName')
+            recipe_summary = request.POST.get('recipeSummary')
+            ingredient_names = request.POST.getlist('ingredient[]')
+            ingredient_amounts = request.POST.getlist('amount[]')
+
+            # Update recipe object with new data
+            recipe.pavadinimas = recipe_name
+            recipe.aprasas = recipe_summary
+            recipe.save()
+
+            # Update or create ingredient objects for the recipe
+            for ingredient_name, ingredient_amount in zip(ingredient_names, ingredient_amounts):
+                product, created = Product.objects.get_or_create(name=ingredient_name)
+                ingredient_amount_decimal = Decimal(ingredient_amount)
+                # Update or create Recepto_produktai instance
+                recepto_produktai, created = Recepto_produktai.objects.get_or_create(
+                    fk_Receptasid_Receptas=recipe,
+                    fk_Produktasid_Produktas=product,
+                    defaults={'amount': ingredient_amount_decimal}
+                )
+                if not created:
+                    recepto_produktai.amount = ingredient_amount_decimal
+                    recepto_produktai.save()
+
+            return JsonResponse({'message': 'Recipe updated successfully!'})
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return render(request, 'edit_recipe.html', {'products': products, 'product_names': product_names, 'recipe': recipe})
 
 @login_required
 def manoreceptai_list(request):
@@ -74,13 +129,14 @@ def manoreceptai_list(request):
         naudotojas = Naudotojai.objects.get(user=current_user)
         # Get all recipe IDs associated with the current user from Naudotojo_Receptai table
         user_recipe_ids = Naudotojo_receptai.objects.filter(fk_Naudotojasid_Naudotojas=naudotojas).values_list('fk_Receptasid_Receptas', flat=True)
-        # Fetch the recipes from Receptai model using the retrieved recipe IDs
+        # Fetch all recipes from Receptai model using the retrieved recipe IDs
         receptai_list = Receptai.objects.filter(id__in=user_recipe_ids)
     except Naudotojai.DoesNotExist:
         # If the Naudotojai instance for the current user does not exist, return an empty list of recipes
         receptai_list = []
 
     return render(request, 'ManoReceptai.html', {'manoreceptai_list': receptai_list})
+
 
 
 @login_required
