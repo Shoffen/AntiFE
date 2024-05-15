@@ -7,33 +7,43 @@
   <style>
     /* valgom.css */
 
+    body {
+    font-family: Arial, sans-serif;
+    background-image: url("{% static 'styles/paveiksleliai/back.jpg' %}");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+
 /* Style the main heading */
 h1 {
-    font-size: 30px;
-    color: #333; /* Dark gray color */
-    font-weight: bold;
-    text-align: center;
+  font-size: 30px;
+  color: #777676;
+  font-weight: bold;
+  text-align: center;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  padding: 15px 20px; /* Add some padding */
+  background-color: #e0e0e0; /* Light gray background */
+  border-radius: 5px; /* Rounded corners */
+  margin-bottom: 20px; /* Add some margin */
 }
 
-/* Style the container */
-.container {
-    margin-top: 10px;
+h2, h3 {
+  font-family: serif; /* Different font for headings */
+  color: #777676; /* Dark gray */
+  text-align: center;
+  font-weight: bold;
+  padding: 10px;
+  background-color: #f5f5f5; /* White background */
+  border-radius: 5px; /* Rounded corners */
+  margin-bottom: 10px; /* Add some margin */
 }
 
-/* Style the section headings */
-h2 {
-    font-size: 20px;
-    color: #666; /* Medium gray color */
-    margin-bottom: 10px;
-    margin-top: 20px;
-    font-weight: bold;
-}
-
-h3 {
-    font-size: 30px;
-    color: #666; /* Dark gray color */
-    font-weight: bold;
-    text-align: center;
+.valgymo-container {
+  background-color: #f5f5f5;
+  padding: 15px; /* Add some padding for spacing (optional) */
+  border-radius: 5px; /* Rounded corners (optional) */
+  margin-bottom: 20px;
 }
 
 /* Style the table */
@@ -42,6 +52,7 @@ h3 {
     border-collapse: collapse;
     margin-bottom: 20px;
 }
+
 
 /* Style the table headers */
 .valgymai-table th {
@@ -56,26 +67,6 @@ h3 {
     padding: 8px;
 }
 
-/* Style the "Add New" button */
-.add-new-button {
-    background-color: #007bff; /* Blue color */
-    color: #fff; /* White color */
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.add-new-button:hover {
-    background-color: #0056b3; /* Darker blue color on hover */
-}
-
-/* Style the hidden form */
-.hidden {
-    display: none;
-}
-
 .styled-cell {
   display: inline-block; /* Display as inline-block to remove table layout */
   border-left: 1px solid black; /* Set left border */
@@ -88,31 +79,6 @@ h3 {
 
 .valgymai-table td {
     position: relative; /* Ensure positioning of pseudo-element */
-}
-
-.valgymai-table td.hoverable:hover::after {
-    content: attr(data-aprasas); /* Display description on hover */
-    position: absolute; /* Position relative to the cell */
-    top: 100%; /* Position below the cell */
-    left: 50%; /* Align with the center of the cell */
-    transform: translateX(-20%); /* Center horizontally */
-    background-color: #f9f9f9; /* Light background color */
-    color: #333; /* Text color */
-    font-size: 14px; /* Font size */
-    padding: 10px; /* Padding for the tooltip */
-    border-radius: 5px; /* Rounded corners */
-    border: 1px solid #ccc; /* Border */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Shadow */
-    z-index: 1; /* Ensure the tooltip appears above other content */
-    width: 800px; /* Set a fixed width */
-    max-width: 250%; /* Limit the maximum width */
-    white-space: pre-wrap; /* Allow line breaks */
-}
-
-.amountWarning {
-  color: red;
-  font-size: 12px;
-  margin-top: 5px;
 }
 
 /* Add this CSS to hide the warning message initially */
@@ -144,6 +110,31 @@ h3 {
   cursor: pointer;
 }
 
+.valgymai-table td.hoverable:hover::after {
+    content: attr(data-aprasas); /* Display description on hover */
+    position: absolute; /* Position relative to the cell */
+    top: 100%; /* Position below the cell */
+    left: 50%; /* Align with the center of the cell */
+    transform: translateX(-20%); /* Center horizontally */
+    background-color: #f9f9f9; /* Light background color */
+    color: #333; /* Text color */
+    font-size: 14px; /* Font size */
+    padding: 10px; /* Padding for the tooltip */
+    border-radius: 5px; /* Rounded corners */
+    border: 1px solid #ccc; /* Border */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Shadow */
+    z-index: 1; /* Ensure the tooltip appears above other content */
+    width: 800px; /* Set a fixed width */
+    max-width: 250%; /* Limit the maximum width */
+    white-space: pre-wrap; /* Allow line breaks */
+}
+
+.amountWarning {
+  color: red;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
 .buttons button#confirmPaste {
   background-color: #007bff;
   color: white;
@@ -154,15 +145,53 @@ h3 {
   color: black;
 }
 
+.add-new-form {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: transparent; /* Make the background transparent */
+    border: none; /* Remove border */
+    box-shadow: none; /* Remove box shadow */
+  }
+
+  .add-new-form input[type="text"],
+  .add-new-form input[type="number"],
+  .add-new-form select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    font-size: 16px;
+  }
+
+  .add-new-form .amountWarning {
+    color: red;
+  }
+
+  .add-new-form .add-item-button {
+    background-color: #28a745; /* Green color for button */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .add-new-form .add-item-button:hover {
+    background-color: #218838; /* Darker green color on hover */
+  }
+
   </style>
 </head>
 
 <body>
   <h1><span id="selectedDateOutput"></span> dienos valgiaraštis</h1>
   <div class="container">
-    <h2>Bendras fenilalaninas: {{ valgymai_list.total_fenilalaninas }} mg</h2>
-    <h2>Bendras baltymas: {{ valgymai_list.total_baltymas }} g</h2>
+    <h2>Bendras fenilalaninas: {{ valgymai_list.total_fenilalaninas }} mg<br>Bendras baltymas: {{ valgymai_list.total_baltymas }} g</h2>
     {% for valgymas in valgymai_list %}
+    <div class="valgymo-container">
       <h2>{{ valgymas.tipas }}</h2>
       {% if valgymas.valgymo_receptas_set.all or valgymas.valgomas_produktas_set.all %}
       <table class="valgymai-table">
@@ -172,6 +201,7 @@ h3 {
             <th>Kiekis (g)</th>
             <th>Baltymai (g)</th>
             <th>Fenilalaninas (mg)</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -187,7 +217,7 @@ h3 {
               <td>{{ valgomasreceptas.total_fenilalaninas }} </td>
               <td class="styled-cell"><form action="{% url 'mityba:delete_valgomasReceptas' valgymo_receptas_id=valgomasreceptas.id %}" method="post">
                 {% csrf_token %}
-                <button type="submit">Trinti</button>
+                <button class="btn btn-danger" type="submit">X</button>
             </form></td>
             </tr>
           {% endfor %}
@@ -199,14 +229,14 @@ h3 {
               <td>{{ valgomasproduktas.total_fenilalaninas }} </td>
               <td class="styled-cell"><form action="{% url 'mityba:delete_valgomasProduktas' valgomas_produktas_id=valgomasproduktas.id %}" method="post">
                 {% csrf_token %}
-                <button type="submit">Trinti</button>
+                <button class="btn btn-danger" type="submit">X</button>
             </form></td>
             </tr>
           {% endfor %}
         </tbody>
       </table>
       {% endif %}
-      <button class="add-new-button" data-index="{{ forloop.counter }}">Pridėti</button> 
+      <button class="btn btn-success add-new-button" data-index="{{ forloop.counter }}">➕</button> 
       <div class="add-new-form hidden" data-index="{{ forloop.counter }}">
         <input type="text" class="searchInput" placeholder="Paieška">
         <br>
@@ -218,11 +248,12 @@ h3 {
         <div class="amountWarning hidden">Privalote įvesti kiekį!</div>
         <button class="add-item-button">Pridėti</button>
       </div>
+    </div>
     {% endfor %}
     
   </div>
-  <button class="btn btn-primary" id="copyMealPlanButton" onclick="copyMealPlan()">Kopijuoti valgiaraštį</button>
-  <button class="btn btn-primary hidden" id="pasteMealPlanButton" onclick="pasteMealPlan()">Įklijuoti nukopijuotą valgiaraštį</button>
+  <button class="btn btn-success" id="copyMealPlanButton" onclick="copyMealPlan()">Kopijuoti valgiaraštį</button>
+  <button class="btn btn-success hidden" id="pasteMealPlanButton" onclick="pasteMealPlan()">Įklijuoti nukopijuotą valgiaraštį</button>
   <div id="confirmationDialog" class="confirmation-dialog hidden">
     <div class="dialog-content">
       <p>Ar tikrai norite pakeisti dabartinį mitybos planą, nukopijuotu?</p>
@@ -235,6 +266,10 @@ h3 {
   </div>
 </body>
 <script>
+  const addNewForm = document.querySelector('.add-new-form');
+  
+  // Hide the element initially
+  addNewForm.classList.add('hidden');
   const selectedDate = localStorage.getItem('selectedDate');
   document.getElementById('selectedDateOutput').textContent = selectedDate;
 
@@ -261,6 +296,7 @@ function handleAddNewClick(event) {
 
 const addNewForm = document.querySelector(`.add-new-form[data-index="${buttonIndex}"]`);
   addNewForm.classList.remove('hidden');
+  addNewForm.classList.add('flex');
 
   const searchInput = addNewForm.querySelector('.searchInput');
   searchInput.value = '';
@@ -287,11 +323,13 @@ const addNewForm = document.querySelector(`.add-new-form[data-index="${buttonInd
     recipeSelect.add(option);
   });
 
+  console.log(recipeSelect);
   searchInput.addEventListener('input', () => {
     const searchText = searchInput.value.toLowerCase();
     const filteredReceptai = all_receptai.filter(receptas => receptas.fields.pavadinimas.toLowerCase().includes(searchText));
     const filteredProducts = all_products.filter(receptas => receptas.fields.name.toLowerCase().includes(searchText));
     updateOptions(recipeSelect, filteredReceptai, filteredProducts);
+    console.log(recipeSelect);
   });
 
   addNewButtons.forEach(button => {
@@ -308,13 +346,13 @@ function updateOptions(selectElement, filteredReceptai, filteredProducts) {
 
     filteredReceptai.forEach(item => {
       const option = document.createElement('option');
-      option.value = item;
+      option.value = item.pk;
       option.text = item.fields.pavadinimas;
       selectElement.add(option);
     });
     filteredProducts.forEach(item => {
       const option = document.createElement('option');
-      option.value = item;
+      option.value = item.pk;
       option.text = item.fields.name;
       selectElement.add(option);
     });
@@ -356,14 +394,11 @@ function handleAddItemClick(event) {
 function copyMealPlan() {
   localStorage.setItem('copyDate', selectedDate);
   const copyDate = localStorage.getItem('copyDate');
-  console.log(copyDate);
   alert("Mitybos planas nukopijuotas!");
   window.location.href = "{% url 'mityba:saveCopy' %}";
 }
 //perkuriam dabartini valgiarasti pagal kita
 function pasteMealPlan() {
-  console.log(copyDate);
-  console.log(selectedDate);
   document.getElementById('copyDateOutput').textContent = copyDate;
   const confirmationDialog = document.getElementById('confirmationDialog');
   confirmationDialog.classList.remove('hidden');
