@@ -14,9 +14,24 @@
   display: none;
 }
 
+.back-button {
+        background-color: blue;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+.back-button:hover {
+    background-color: darkblue;
+}
+
 </style>   
 
 <div class="container">
+    <button class="back-button" onclick="window.location.href = '/mityba/manoreceptai_list';">Grįžti</button>
+
     <h2>Redaguoti receptą</h2>
 
     <form id="recipeForm">
@@ -84,6 +99,11 @@
         const ingredientDropdown = document.getElementById('ingredientDropdown');
         const ingredientOptions = ingredientDropdown ? ingredientDropdown.querySelectorAll('.ingredient-option') : [];
         const ingredientList = document.getElementById('ingredientList');
+
+        
+
+        
+
 
         searchIngredientInput.addEventListener('input', function (event) {
             const query = event.target.value.trim();

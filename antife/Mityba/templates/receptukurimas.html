@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+
 
 {% block content %}
 <style>
@@ -14,44 +14,51 @@
   display: none;
 }
 
+.ingredient {
+    margin-bottom: 10px;
+}
+
+.removeIngredient {
+    margin-top: 30px; /* Adjust as needed */
+}
+
 </style>   
 
 <div class="container">
+    <button class="back-button" onclick="window.history.back()">Grįžti</button>
     <h2>Sukurkite receptą</h2>
 
     <form id="recipeForm">
         {% csrf_token %}
         
-        <div class="form-group">
+        <div class="form-group" style="width: 64%";>
             <label for="recipeName">Recepto pavadinimas:</label>
-            <input type="text" id="recipeName" name="recipeName" class="form-control" required>
+            <input type="text" id="recipeName" name="recipeName" class="form-control" style="width: calc(100% - 170px);" required>
         </div>
-
+        <div class="col-sm-6">
+            <div id="ingredientList">
+                <!-- Existing ingredient fields will be populated here -->
+            </div>
+        </div>
         <div class="row">
             <div class="col-sm-6">
                 <div class="form-group">
                     <label for="searchIngredient">Paieška:</label>
-                    <input type="text" id="searchIngredient" class="form-control search-input" placeholder="Ieškoti produkto...">
+                    <input type="text" id="searchIngredient" class="form-control search-input" placeholder="Norėdami pridėti ingredientą įveskite pavadinimą ir pasirinkite">
                     <div class="dropdown-menu" id="ingredientDropdown">
                         <div class="dropdown-content">
                             {% for product_name in product_names %}
-                                <div class="ingredient-option">{{ product_name }}</div>
+                            <div class="ingredient-option">{{ product_name }}</div>
                             {% endfor %}
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-sm-6">
-                <div id="ingredientList">
-                    <!-- Existing ingredient fields will be populated here -->
-                </div>
-                
-            </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" style="width: 49%;">
             <label for="recipeSummary">Aprašas:</label>
-            <textarea id="recipeSummary" name="recipeSummary" class="form-control" rows="4" style="white-space: pre-line;"></textarea>
+            <textarea id="recipeSummary" name="recipeSummary" class="form-control" rows="4" style="width: 100%; white-space: pre-line;"></textarea>
         </div>
 
         <button type="submit" class="btn btn-success">Sukurti receptą</button>
@@ -64,14 +71,15 @@
         const ingredientDropdown = document.getElementById('ingredientDropdown');
         const ingredientOptions = ingredientDropdown ? ingredientDropdown.querySelectorAll('.ingredient-option') : [];
         const ingredientList = document.getElementById('ingredientList');
+        const containerElement = document.querySelector('.container');
 
         searchIngredientInput.addEventListener('input', function (event) {
             const query = event.target.value.trim();
             const dropdownMenu = document.querySelector('.dropdown-menu');
 
-            // Calculate the top position based on the search input's position
-            const searchInputRect = searchIngredientInput.getBoundingClientRect();
-            dropdownMenu.style.top = (searchInputRect.bottom + window.pageYOffset) + 'px';
+            // Calculate the top position based on the container element
+            const containerRect = containerElement.getBoundingClientRect();
+            dropdownMenu.style.top = (containerRect.bottom + window.pageYOffset) + 'px';
 
             ingredientOptions.forEach(option => {
                 const productName = option.textContent;
@@ -172,5 +180,20 @@
     });
 </script>
 
+
+<style>
+    .back-button {
+        background-color: blue;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .back-button:hover {
+        background-color: darkblue;
+    }
+</style>
     
 {% endblock %}
