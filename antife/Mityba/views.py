@@ -1,5 +1,5 @@
 from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
-from homepage.models import Product, Receptai, Naudotojai, Valgymai, Valgiarasciai, Recepto_produktai, Naudotojo_receptai, Megstamiausi_receptai, Valgymo_receptas, Valgomas_produktas
+from homepage.models import Product, Receptai, Kraujo_tyrimai, Naudotojai, Valgymai, Valgiarasciai, Recepto_produktai, Naudotojo_receptai, Megstamiausi_receptai, Valgymo_receptas, Valgomas_produktas
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
@@ -33,6 +33,98 @@ def valgiarastis(request):
   valgiarasciai_json = serialize('json', valgiarasciai)
   context = {'valgiarasciai_json': valgiarasciai_json}
   return render(request, 'valgiarastis.html', context)
+
+from django.utils import timezone
+import math
+from django.shortcuts import render
+from django.db.models import F
+from django.core import serializers
+from django.db.models.functions import Abs
+from django.db.models import ExpressionWrapper, IntegerField
+from django.db.models import ExpressionWrapper, F, IntegerField, Func
+from datetime import datetime
+from django.db.models import Min
+from datetime import datetime
+from django.db.models import Min, ExpressionWrapper, F, DurationField
+
+def valgiarastisAny(request):
+    # Extract the clicked date from the URL parameter
+    clicked_date = request.GET.get('date', '')  # Default to empty string if not provided
+    clicked_date_str = request.GET.get('date', '')
+    print(clicked_date)
+    
+    # Split the date string by spaces and take the first element as the year
+    clicked_year = clicked_date.split(' ')[0].strip()
+    print(clicked_year)
+
+    # Split the date string by spaces and take the third element as the month name
+    clicked_month_lithuanian = clicked_date.split(' ')[2].strip()
+    print(clicked_month_lithuanian)
+
+    clicked_day = clicked_date.split(' ')[3].strip()
+    print(clicked_day)  # Output: 7
+
+    # Map Lithuanian month names to English
+    lithuanian_to_english_month = {
+        'Sausio': '01',
+        'Vasario': '02',
+        'Kovo': '03',
+        'Balandžio': '04',
+        'Gegužės': '05',
+        'Birželio': '06',
+        'Liepos': '07',
+        'Rugpjūčio': '08',
+        'Rugsėjo': '09',
+        'Spalio': '10',
+        'Lapkričio': '11',
+        'Gruodžio': '12',
+    }
+
+    # Convert Lithuanian month name to numeric representation
+    clicked_month = lithuanian_to_english_month.get(clicked_month_lithuanian, '01')  # Default to January if not found
+    print('Clicked Month:', clicked_month)
+
+    # Assuming you already have the necessary data to pass to the template
+    naudotojas = Naudotojai.objects.get(user=request.user)
+    valgiarasciai = Valgiarasciai.objects.filter(fk_Naudotojasid_Naudotojas=naudotojas)
+    valgiarasciai_json = serialize('json', valgiarasciai)
+
+    
+
+    
+        # Parse the selected date
+    clicked_date = datetime(int(clicked_year), int(clicked_month), int(clicked_day)).date()
+
+    # Query the blood samples filtered by user and sorted by date
+    blood_samples = Kraujo_tyrimai.objects.filter(fk_Naudotojasid_Naudotojas=request.user.naudotojai).order_by('data')
+
+    # Find the closest sample to the selected date
+    closest_sample = None
+    for sample in reversed(blood_samples):
+        sample_date = sample.data
+        if sample_date < clicked_date:
+            closest_sample = sample
+            break
+
+    # Print the closest sample
+    print ("Selected data:", clicked_date)
+    print("Closest blood sample:", closest_sample.data)
+    
+    context = {
+
+        'valgiarasciai_json': valgiarasciai_json,
+        'clicked_month': clicked_month,  # Pass the clicked month to the template
+        'clicked_date': clicked_date,  # Pass the clicked date to the template
+        'clicked_year': clicked_year,
+        'clicked_day': clicked_day,
+        'closest_sample_data': closest_sample.data
+    }
+
+    return render(request, 'ValgiarastisAny.html', context)
+
+
+
+
 
 def product(request): 
   query = request.GET.get('query')
@@ -364,3 +456,41 @@ def copyValgiarastis(request):
             )
 
     return valgymai_list(request)
+
+from datetime import datetime
+from django.shortcuts import render
+from homepage.models import Kraujo_tyrimai
+
+def your_view_function(request):
+    # Retrieve clicked year, month, and day from the request
+    clicked_year = int(request.GET.get('clicked_year', 0))
+    clicked_month = int(request.GET.get('clicked_month', 0))
+    clicked_day = int(request.GET.get('clicked_day', 0))
+    
+    # Convert clicked year, month, and day into a datetime object
+    clicked_date = datetime(clicked_year, clicked_month, clicked_day)
+    
+    # Retrieve blood samples for the current user
+    kraujo_tyrimai_qs = Kraujo_tyrimai.objects.filter(fk_Naudotojasid_Naudotojas__user=request.user)
+    
+    # Initialize variables to store the closest blood sample and the minimum difference
+    closest_sample = None
+    min_difference = None
+    
+    # Iterate through blood samples to find the closest one to the clicked date
+    for blood_sample in kraujo_tyrimai_qs:
+        sample_date = blood_sample.data  # Assuming 'data' is the field storing the sample date
+        
+        # Calculate the absolute difference in days between the sample date and the clicked date
+        difference = abs((sample_date - clicked_date).days)
+        
+        # Update the closest sample if it's the first sample or if the current sample is closer
+        if min_difference is None or difference < min_difference:
+            min_difference = difference
+            closest_sample = blood_sample
+    
+    # Now closest_sample contains the blood sample closest to the clicked date
+    # You can pass it to your template as context
+    
+    return render(request, 'your_template.html', {'closest_sample': closest_sample})
+
