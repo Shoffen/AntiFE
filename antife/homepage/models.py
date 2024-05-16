@@ -33,7 +33,8 @@ class Receptai(models.Model):
     pavadinimas = models.CharField(max_length=255)
     fenilalaninas = models.FloatField(default=0.0)
     baltymai = models.FloatField(default=0.0)
-    aprasas = models.CharField(max_length=255)
+    aprasas = models.CharField(max_length=300)
+    visible = models.BooleanField(default=True)
 
 class Irasai(models.Model):
     pavadinimas = models.CharField(max_length=255, default="Pavadinimas")

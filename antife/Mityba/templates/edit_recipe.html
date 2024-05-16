@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% load static %}
 
 {% block content %}
 <style>
@@ -14,54 +14,82 @@
   display: none;
 }
 
-.ingredient {
-    margin-bottom: 10px;
-}
+.back-button {
+        background-color: blue;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
 
-.removeIngredient {
-    margin-top: 30px; /* Adjust as needed */
+.back-button:hover {
+    background-color: darkblue;
 }
 
 </style>   
 
 <div class="container">
-    <button class="back-button" onclick="window.history.back()">Grįžti</button>
-    <h2>Sukurkite receptą</h2>
+    <button class="back-button" onclick="window.location.href = '/mityba/manoreceptai_list';">Grįžti</button>
+
+    <h2>Redaguoti receptą</h2>
 
     <form id="recipeForm">
         {% csrf_token %}
         
-        <div class="form-group" style="width: 64%";>
+        <div class="form-group">
             <label for="recipeName">Recepto pavadinimas:</label>
-            <input type="text" id="recipeName" name="recipeName" class="form-control" style="width: calc(100% - 170px);" required>
+            <input type="text" id="recipeName" name="recipeName" class="form-control" value="{{ recipe.pavadinimas }}" required>
         </div>
-        <div class="col-sm-6">
-            <div id="ingredientList">
-                <!-- Existing ingredient fields will be populated here -->
-            </div>
-        </div>
+
         <div class="row">
             <div class="col-sm-6">
                 <div class="form-group">
                     <label for="searchIngredient">Paieška:</label>
-                    <input type="text" id="searchIngredient" class="form-control search-input" placeholder="Norėdami pridėti ingredientą įveskite pavadinimą ir pasirinkite">
+                    <input type="text" id="searchIngredient" class="form-control search-input" placeholder="Ieškoti produkto...">
                     <div class="dropdown-menu" id="ingredientDropdown">
                         <div class="dropdown-content">
                             {% for product_name in product_names %}
-                            <div class="ingredient-option">{{ product_name }}</div>
+                                <div class="ingredient-option">{{ product_name }}</div>
                             {% endfor %}
                         </div>
                     </div>
                 </div>
             </div>
+            <div class="col-sm-6">
+                <div id="ingredientList">
+                    <!-- Populate existing ingredient fields -->
+                    {% for recepto_produktai in recipe.recepto_produktai_set.all %}
+                    <div class="ingredient">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="ingredient{{ forloop.counter }}">Ingredientas:</label>
+                                    <input type="text" id="ingredient{{ forloop.counter }}" name="ingredient[]" class="form-control" value="{{ recepto_produktai.fk_Produktasid_Produktas.name }}" required>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label for="amount{{ forloop.counter }}">Kiekis (gramais):</label>
+                                    <input type="number" id="amount{{ forloop.counter }}" name="amount[]" class="form-control" value="{{ recepto_produktai.amount }}" required>
+                                </div>
+                            </div>
+                            <div class="col-sm-2">
+                                <button type="button" class="btn btn-danger removeIngredient">✕</button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
 
-        <div class="form-group" style="width: 49%;">
+        <div class="form-group">
             <label for="recipeSummary">Aprašas:</label>
-            <textarea id="recipeSummary" name="recipeSummary" class="form-control" rows="4" style="width: 100%; white-space: pre-line;"></textarea>
+            <textarea id="recipeSummary" name="recipeSummary" class="form-control" rows="4" style="white-space: pre-line;">{{ recipe.aprasas }}</textarea>
         </div>
 
-        <button type="submit" class="btn btn-success">Sukurti receptą</button>
+        <button type="submit" class="btn btn-success">Atnaujinti receptą</button>
     </form>
 </div>
 
@@ -71,19 +99,18 @@
         const ingredientDropdown = document.getElementById('ingredientDropdown');
         const ingredientOptions = ingredientDropdown ? ingredientDropdown.querySelectorAll('.ingredient-option') : [];
         const ingredientList = document.getElementById('ingredientList');
-        const containerElement = document.querySelector('.container');
+
+        
+
+        
+
 
         searchIngredientInput.addEventListener('input', function (event) {
             const query = event.target.value.trim();
-            const dropdownMenu = document.querySelector('.dropdown-menu');
-
-            // Calculate the top position based on the container element
-            const containerRect = containerElement.getBoundingClientRect();
-            dropdownMenu.style.top = (containerRect.bottom + window.pageYOffset) + 'px';
 
             ingredientOptions.forEach(option => {
                 const productName = option.textContent;
-                if (productName.includes(query)) {
+                if (productName.toLowerCase().includes(query.toLowerCase())) {
                     option.style.display = '';
                 } else {
                     option.style.display = 'none';
@@ -138,8 +165,6 @@
             });
         }
 
-        
-
         ingredientList.addEventListener('click', function (event) {
             if (event.target.classList.contains('removeIngredient')) {
                 event.target.closest('.ingredient').remove();
@@ -169,31 +194,15 @@
             .then(data => {
                 console.log('Server response:', data);
                 if (data.message) {
-                    alert('Recipe created successfully!');
-                    window.location.href = '/mityba/receptai_list';
+                    alert('Recipe updated successfully!');
+                    window.location.href = '/mityba/manoreceptai_list';
                 } else {
-                    alert('Failed to create recipe.');
+                    alert('Failed to update recipe.');
                 }
             })
-            .catch(error => console.error('Error creating recipe:', error));
+            .catch(error => console.error('Error updating recipe:', error));
         });
     });
 </script>
 
-
-<style>
-    .back-button {
-        background-color: blue;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-
-    .back-button:hover {
-        background-color: darkblue;
-    }
-</style>
-    
 {% endblock %}
