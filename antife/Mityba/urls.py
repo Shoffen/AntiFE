@@ -9,7 +9,8 @@ urlpatterns = [
     path('product/', views.product, name='product'),
     path('receptai_list/', views.receptai_list, name='receptai_list'),
     path('create_recipe/', views.create_recipe_view, name='create_recipe'),
-    path('valgiarastis/', views.valgiarastis, name='valgiarastis'),
+    path('valgiarastis-analysis/', views.valgiarastisAny, name='valgiarastisAnalysis'),  # Change the URL pattern and view name
+    path('valgiarastis/', views.valgiarastis, name='valgiarastis'),  # Move this URL pattern to below the valgiarastisAny pattern
     path('create_valgiarastis/', views.create_valgiarastis, name='create_valgiarastis'),
     path('receptai_list/<int:recipe_id>/', views.remove_recipe_view, name='remove_recipe'),
     path('valgymai/', views.valgymai_open, name='valgymai_open'),
@@ -24,4 +25,4 @@ urlpatterns = [
     path('panaudotireceptai/', views.panaudotireceptai, name='panaudoti_receptai'),
     path('receptai_list/<int:recipe_id>/edit/', views.edit_recipe, name='edit_recipe'),
     path('receptai_listt/<int:recipe_id>/', views.toggle_recipe_visibility, name='toggle_recipe_visibility'),
-]
+

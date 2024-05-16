@@ -44,28 +44,46 @@
     const createValgiarastisUrl = document.getElementById("createBtn").getAttribute("data-url");
 
     document.addEventListener('DOMContentLoaded', function() {
+    const clickedYear = '{{ clicked_year }}';
+    const clickedMonth = '{{ clicked_month }}';
+    const clickedDay = '{{ clicked_day }}';
+    const closestSampleData = '{{ closest_sample_data }}';
+    // Calculate the date range between clicked date and closest blood sample date
+    const endDate = new Date(clickedYear, clickedMonth - 1, clickedDay);
+    const startDate = new Date(closestSampleData);
+    const dateRange = getDateRange(startDate, endDate);
+    // Initialize calendar
     var calendarEl = document.getElementById('calendar');
-    var calendar = new FullCalendar.Calendar(calendarEl, {
-        locale: 'lt',
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: ''
-        },
-        selectable: true,
-        select: function(info) {
-            selectedDate = info.startStr;
-            updateCreateButton();
-
-            window.scrollTo({
-                top: document.body.scrollHeight,
-                behavior: 'smooth'
-            });
-        },
-        events: []
-        
-    });
-
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            locale: 'lt',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: ''
+            },
+            initialView: 'dayGridMonth',
+            initialDate: clickedYear + '-' + clickedMonth + '-01',
+            selectable: true,
+            select: function(info) {
+                selectedDate = info.startStr;
+                updateCreateButton();
+                window.scrollTo({
+                    top: document.body.scrollHeight,
+                    behavior: 'smooth'
+                });
+            },
+            events: []
+        });
+    
+        function getDateRange(startDate, endDate) {
+            var dates = [];
+            var currentDate = startDate;
+            while (currentDate <= endDate) {
+                dates.push(new Date(currentDate));
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            return dates;
+        }
     var valgiarasciai = JSON.parse('{{ valgiarasciai_json|escapejs }}');
     var phen = 'Phe: ';
     var balt = 'Bal: ';
@@ -92,6 +110,41 @@
         });
         }
     });
+    dateRange.forEach(function(date) {
+    // Find the valgiarastis for the current date
+    var valgiarastisForDate = valgiarasciai.find(function(valgiarastis) {
+        return new Date(valgiarastis.fields.data).toDateString() === date.toDateString();
+    });
+
+    // Check if valgiarastis exists for the current date
+    if (valgiarastisForDate) {
+        var phenValue = valgiarastisForDate.fields.bendras_fenilalaninas;
+
+        // Set the title based on phenylalanine value
+        var title;
+        if (phenValue > 620) {
+            title = 'Blogas';
+        } else if (phenValue >= 120 && phenValue <= 620) {
+            title = 'Geras';
+        } else {
+            title = 'Nerasta';
+        }
+
+        // Add event to the calendar with the determined title
+        calendar.addEvent({
+            title: title,
+            start: date,
+            
+        });
+    } else {
+        // Add event to the calendar if valgiarastis is non-existing for the current date
+        calendar.addEvent({
+            title: 'Nerasta',
+            start: date,
+        });
+    }
+});
+
 
     calendar.render();
     });
