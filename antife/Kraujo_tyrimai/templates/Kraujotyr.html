@@ -126,16 +126,66 @@
             margin-bottom: 25px; /* Add margin to the bottom of the select element */
         }
         .form-container:first-child .filtruoti-btn {
-    margin-top: 30px; /* Adjust the margin-top value to move the button downwards */
-    }
-    h1 {
-    text-align: center;
-    color: #333;
-    margin-top: 20px; /* Add space between the top of the page and the h1 */
-    margin-bottom: 20px; /* Add space below the h1 */
-}
+            margin-top: 30px; /* Adjust the margin-top value to move the button downwards */
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-top: 20px; /* Add space between the top of the page and the h1 */
+            margin-bottom: 20px; /* Add space below the h1 */
+        }
+        /* Popup Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            /* Adjust the width of the modal content */
+            width: 20%; /* You can change this value as needed */
+        }
 
-
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .button-container button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 0 10px;
+        }
+        .button-container button:hover {
+            background-color: #45a049;
+        }
     </style>
 
     <h1>Kraujo tyrimų sekimas</h1>
@@ -149,21 +199,35 @@
             {% endfor %}
         </div>
     {% endif %}
+    <style>
+        /* Existing styles */
+        /* ... */
+        /* Add the following style */
+        .checkbox-container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .checkbox-container input[type="checkbox"] {
+            margin-right: 10px;
+        }
+    </style>
+    
     
     <div class="form-wrapper">
         <div class="form-container">
             <form method="post" action="{% url 'kraujo_tyrimai:kraujotyrview' %}">
                 {% csrf_token %}
                 <h2>Filtruoti pagal metus</h2>
-                <label for="year" style="display: inline-block;">Metai:</label>
-                <select name="year" id="year">
-                    {% for year in years %}
-                        <!-- Set the selected attribute if the year matches the selected_year -->
-                        <option value="{{ year }}" {% if year == selected_year %} selected {% endif %}>{{ year }}</option>
-                    {% endfor %}
-                </select>
+                {% for year in years %}
+                    <label for="year{{ year }}" style="display: inline-block; margin-right: 10px;">
+                        <input type="checkbox" name="year" id="year{{ year }}" value="{{ year }}" {% if year == selected_year %} checked {% endif %}>
+                        {{ year }}
+                    </label>
+                {% endfor %}
                 <input type="submit" value="Filtruoti" class="filtruoti-btn">
             </form>
+            
+            
         </div>
         
         <div class="form-container">
@@ -187,25 +251,139 @@
     {% if chart %}
         {{ chart|safe }}
     {% endif %}
+
+    <!-- Popup Modal -->
+    <div id="popupModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="button-container">
+                <button id="editBtn">Redaguoti</button>
+                <button id="deleteBtn">Ištrinti</button>
+                <button id="analyzeBtn">Analizė</button>
+            </div>
+            <!-- Edit form -->
+            <form id="editForm" action="{% url 'kraujo_tyrimai:save_tyrimas' %}" method="post" style="display: none;">
+                {% csrf_token %}
+                <input type="hidden" id="editSelectedDataPointId" name="selectedDataPointId" value="">
+                <input type="hidden" name="selected_year" value="{{ selected_year }}">
+                <h3>Redaguoti kraujo tyrimą</h3>
+                <div class="input-container">
+                    <label for="editDate">Data:</label>
+                    <input type="date" id="editDate" name="editedDate">
+                </div>
+                <div class="input-container">
+                    <label for="editFenilalaninas">Fenilalaninas µmol/l:</label>
+                    <input type="number" id="editFenilalaninas" name="editedFenilalaninas">
+                </div>
+                <input type="submit" value="Išsaugoti">
+
+            </form>
+
+        </div>
+    </div>
+    <form id="deleteForm" action="{% url 'kraujo_tyrimai:delete_tyrimas' %}" method="post" style="display: none;">
+        {% csrf_token %}
+        <input type="hidden" id="deleteSelectedDataPointId" name="selectedDataPointId" value="">
+        <input type="hidden" name="selected_year" value="{{ selected_year }}">
+        <input type="submit" value="Delete" id="deleteBtn">
+    </form>
     
     <script src="https://mpl-cursors-temmiexue.vercel.app/dist/mplcursors.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> <!-- Add Plotly.js library -->
     <script>
-        // Activate hover functionality for the chart image
-        mplcursors.enable(document.querySelectorAll('.chart-img'));
-    </script>
-    <script>
-        // Get the select element
-        const selectElement = document.getElementById('year');
-        // Get the label element
-        const labelElement = document.querySelector('label[for="year"]');
-        // Set the initial title
-        labelElement.innerText = 'Metai: ' + selectElement.value;
+        document.addEventListener('DOMContentLoaded', function () {
+            const yearCheckboxes = document.querySelectorAll('input[name="year"]');
     
-        // Add change event listener to update the title when the selection changes
-        selectElement.addEventListener('change', function() {
-            labelElement.innerText = 'Metai: ' + selectElement.value;
+            // Event listener for checkbox clicks
+            yearCheckboxes.forEach(function(checkbox) {
+                checkbox.addEventListener('change', function(event) {
+                    if (event.target.checked) {
+                        // Uncheck all other checkboxes
+                        yearCheckboxes.forEach(function(otherCheckbox) {
+                            if (otherCheckbox !== event.target) {
+                                otherCheckbox.checked = false;
+                            }
+                        });
+                    }
+                });
+            });
         });
     </script>
     
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Get the plotly graph
+            const plotlyGraph = document.querySelector('.plotly-graph-div');
+    
+            // When the user clicks on a data point, show the popup modal
+plotlyGraph.on('plotly_click', function(data) {
+    if(data.points.length > 0) {
+        // Show the modal
+        document.getElementById("popupModal").style.display = "block";
 
+        // Store the clicked data for later use
+        const clickedData = data.points[0];
+        
+        // Edit Button Click
+        document.getElementById("editBtn").onclick = function() {
+            // Retrieve the necessary data (e.g., date and phenylalanine amount)
+            const clickedDate = clickedData.x;
+            const phenylalanineAmount = clickedData.y; // Example, replace with actual data retrieval
+
+            // Fill in the edit form with the clicked data
+            document.getElementById("editDate").value = clickedDate; // Prepopulate date input field
+            document.getElementById("editFenilalaninas").value = phenylalanineAmount;
+
+            // Set the value of the hidden input field to the clicked date for edit form
+            document.getElementById("editSelectedDataPointId").value = clickedDate;
+
+            // Show the edit form in the modal
+            document.getElementById("editForm").style.display = "block";
+        };
+
+        // Delete Button Click
+        document.getElementById("deleteBtn").onclick = function() {
+            // Retrieve the necessary data (e.g., date)
+            const clickedDate = clickedData.x;
+
+            // Set the value of the hidden input field for delete form
+            document.getElementById("deleteSelectedDataPointId").value = clickedDate;
+
+            // Submit the delete form
+            document.getElementById("deleteForm").submit();
+        };
+
+        // Analyze Button Click
+        document.getElementById("analyzeBtn").onclick = function() {
+            // Retrieve the necessary data (e.g., date)
+            const clickedDate = clickedData.x;
+
+            // Redirect to Profilis.html with the necessary data
+            window.location.href = "{% url 'mityba:valgiarastisAnalysis' %}?date=" + encodeURIComponent(clickedDate);
+        };
+    }
+});
+
+            // Get the <span> element that closes the modal
+            var span = document.getElementsByClassName("close")[0];
+    
+            // When the user clicks on <span> (x), close the modal
+            span.onclick = function() {
+                document.getElementById("popupModal").style.display = "none";
+                // Hide the edit form when closing the modal
+                document.getElementById("editForm").style.display = "none";
+            }
+    
+            // When the user clicks anywhere outside of the modal, close it
+            window.onclick = function(event) {
+                var modal = document.getElementById("popupModal");
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                    // Hide the edit form when clicking outside the modal
+                    document.getElementById("editForm").style.display = "none";
+                }
+            }
+        });
+    </script>
+    
 {% endblock %}

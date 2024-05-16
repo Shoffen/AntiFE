@@ -49,9 +49,118 @@ def create_kraujo_tyrimas(request):
     # If the request method is not POST, render the 'kraujotyrview' template
     return redirect('kraujo_tyrimai:kraujotyrview')
 
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+
+
+
+    
+def deleteTyrimas(request):
+
+    selected_data = request.POST.get('selectedDataPointId')
+    selected_year = int(request.POST.get('selected_year'))  # Retrieve selected year
+    print("OOOOOOOOOOOOOOOOOOOOO"+selected_data)
+    clicked_date = getData(selected_data)
+    
+    kraujotyrimas_obj = Kraujo_tyrimai.objects.get(data=clicked_date)
+        
+    kraujotyrimas_obj.delete()
+    messages.success(request, 'Kraujo tyrimas sėkmingai pašalintas.')
+    return redirect('kraujo_tyrimai:kraujotyrview', selected_year=selected_year)
+
+def getData(selected_data):
+        # Split the date string by spaces and take the first element as the year
+        clicked_year = selected_data.split(' ')[0].strip()
+        print(clicked_year)
+
+        # Split the date string by spaces and take the third element as the month name
+        clicked_month_lithuanian = selected_data.split(' ')[2].strip()
+        print(clicked_month_lithuanian)
+
+        clicked_day = selected_data.split(' ')[3].strip()
+        print(clicked_day)  # Output: 7
+
+        # Map Lithuanian month names to English
+        lithuanian_to_english_month = {
+            'Sausio': '01',
+            'Vasario': '02',
+            'Kovo': '03',
+            'Balandžio': '04',
+            'Gegužės': '05',
+            'Birželio': '06',
+            'Liepos': '07',
+            'Rugpjūčio': '08',
+            'Rugsėjo': '09',
+            'Spalio': '10',
+            'Lapkričio': '11',
+            'Gruodžio': '12',
+        }
+
+        # Convert Lithuanian month name to numeric representation
+        clicked_month = lithuanian_to_english_month.get(clicked_month_lithuanian, '01')  # Default to January if not found
+        print('Clicked Month:', clicked_month)
+
+            # Parse the selected date
+        clicked_date = datetime(int(clicked_year), int(clicked_month), int(clicked_day)).date()
+        return clicked_date
+
 
 @login_required
-def kraujotyrview(request, selected_year=None):  # Add selected_year as a parameter with a default value of None
+def saveTyrimas(request):
+    if request.method == 'POST':
+        # Retrieve the edited data and selected data point ID from the request
+        edited_date = request.POST.get('editedDate')
+        edited_fenilalaninas = request.POST.get('editedFenilalaninas')
+        print("NUUUUUUUUUUUUUUUUUUUUUU" + edited_date)
+        print("NUUUUUUUUUUUUUUUUUUUUUU" + edited_fenilalaninas)
+        selected_data = request.POST.get('selectedDataPointId')
+        #selected_data_point_id = request.POST.get('selectedDataPointId')
+        selected_year = int(request.POST.get('selected_year'))  # Retrieve selected year
+
+        
+        clicked_date = getData(selected_data)
+        print(clicked_date)
+        kraujotyrimas_obj = Kraujo_tyrimai.objects.get(data=clicked_date)
+        
+        data_obj = datetime.strptime(edited_date, '%Y-%m-%d').date()
+        today = datetime.now().date()
+        print(clicked_date)
+        print(edited_date)
+         # Ensure edited_date is a datetime.date object
+        edited_date = datetime.strptime(edited_date, '%Y-%m-%d').date()
+
+        if data_obj > today:
+            # If the selected date is greater than today's date, display an error message
+            messages.error(request, 'Pasirinkta negalima data.')
+            return redirect('kraujo_tyrimai:kraujotyrview', selected_year=selected_year)  # Pass selected year
+        # Fetch the corresponding Naudotojai instance
+        if clicked_date!=edited_date:
+            naudotojai_instance = Naudotojai.objects.get(user=request.user)
+            existing_kraujotyr = Kraujo_tyrimai.objects.filter(Q(data=edited_date) & Q(fk_Naudotojasid_Naudotojas=naudotojai_instance)).exists()
+            if existing_kraujotyr:
+                # If a Kraujotyr already exists for the given date and user, show an error message
+                messages.error(request, 'Kraujo tyrimas su šia data jau egzistuoja.')
+        else:
+            kraujotyrimas_obj.data = edited_date
+            kraujotyrimas_obj.fenilalaninas =edited_fenilalaninas
+            kraujotyrimas_obj.save()
+            messages.success(request, 'Kraujo tyrimas sėkmingai atnaujintas.')
+    
+        
+        
+
+    return redirect('kraujo_tyrimai:kraujotyrview', selected_year=selected_year)  # Pass selected year
+
+
+
+
+
+
+
+
+            
+@login_required
+def kraujotyrview(request, selected_year=None):  # Add selected_year as a parameter with a default value of None"
     # Filter Kraujo_tyrimai instances by the current authenticated user
     kraujo_tyrimai_qs = Kraujo_tyrimai.objects.filter(fk_Naudotojasid_Naudotojas__user=request.user)
     
@@ -122,17 +231,18 @@ def kraujotyrview(request, selected_year=None):  # Add selected_year as a parame
         12: 'Gruodžio'
     }
     formatted_dates = [f"{date.strftime('%Y')} - {lithuanian_month_names[date.month]} {date.day}" for date in sorted_dates]
-    
+    #formatted_dates = [f"{date.strftime('%Y')} - {date.month} {date.day}" for date in sorted_dates]
     # Create the plot
     fig = px.line(y=sorted_phenylalanine, x=formatted_dates, labels={'x': 'Data', 'y': 'Fenilalaninas µmol/l'},
                   hover_name=[date.strftime('%Y %B %d') for date in sorted_dates])  # Set hover_name to formatted dates
     
     # Add scatter markers with colored points and disable legend
-    fig.add_scatter(x=formatted_dates, y=sorted_phenylalanine, mode='markers', marker=dict(size=10, color=colors), showlegend=False, hoverinfo='text')
+    fig.add_scatter(x=formatted_dates, y=sorted_phenylalanine, mode='markers', marker=dict(size=10, color=colors), name="", hoverinfo='none')
 
     # Customize hover text
     hover_text = 'Fenilalaninas: %{y}<br>Data: %{x}'
     fig.update_traces(hovertemplate=hover_text)
+
 
     # Determine the maximum value of Fenilalaninas
     max_fenilalaninas = max(sorted_phenylalanine)
@@ -140,6 +250,8 @@ def kraujotyrview(request, selected_year=None):  # Add selected_year as a parame
     # Set the default range for the y-axis
     y_axis_upper_limit = max_fenilalaninas * 1.1  # Increase by 10% for padding
     fig.update_layout(yaxis=dict(range=[0, y_axis_upper_limit]))
+    # Update layout to disable legend
+    fig.update_layout(showlegend=False)
     
     # Define the green background zone
     fig.update_layout(
@@ -163,4 +275,16 @@ def kraujotyrview(request, selected_year=None):  # Add selected_year as a parame
     
     context = {'chart': chart, 'years': years, 'selected_year': selected_year}
     
+    # Handle form submission
+    if request.method == 'POST':
+        selected_year = int(request.POST.get('year'))  # Retrieve selected year from the POST data
+    
+    print (selected_year)
+    context = {'chart': chart, 'years': years, 'selected_year': selected_year}
     return render(request, 'kraujotyr.html', context)
+
+    
+
+
+
+
