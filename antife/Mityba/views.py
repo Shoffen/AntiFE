@@ -49,6 +49,32 @@ from django.db.models import Min
 from datetime import datetime
 from django.db.models import Min, ExpressionWrapper, F, DurationField
 
+
+import openpyxl
+import pandas as pd
+from django.http import JsonResponse
+
+import pandas as pd
+from django.shortcuts import render
+
+def rekomendacijos(request):
+    # Read the Excel file
+    excel_data = pd.ExcelFile('rekomendacijos.xlsx')
+    
+    # Dictionary to store data from each sheet
+    data_dict = {}
+    
+    # Loop through each sheet and convert the Excel data to a list of dictionaries
+    for sheet_name in excel_data.sheet_names:
+        data = excel_data.parse(sheet_name).to_dict(orient='records')
+        data_dict[sheet_name] = data
+
+    # Pass the data to the template
+    return render(request, 'rekomendacijos.html', {'data_dict': data_dict})
+
+
+
+
 def valgiarastisAny(request):
     # Extract the clicked date from the URL parameter
     clicked_date = request.GET.get('date', '')  # Default to empty string if not provided
@@ -90,9 +116,6 @@ def valgiarastisAny(request):
     naudotojas = Naudotojai.objects.get(user=request.user)
     valgiarasciai = Valgiarasciai.objects.filter(fk_Naudotojasid_Naudotojas=naudotojas)
     valgiarasciai_json = serialize('json', valgiarasciai)
-
-    
-
     
         # Parse the selected date
     clicked_date = datetime(int(clicked_year), int(clicked_month), int(clicked_day)).date()
