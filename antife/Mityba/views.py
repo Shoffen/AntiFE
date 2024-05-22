@@ -1,3 +1,6 @@
+import os
+import random
+from django.conf import settings
 from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from homepage.models import Product, Receptai, Kraujo_tyrimai, Naudotojai, Valgymai, Valgiarasciai, Recepto_produktai, Naudotojo_receptai, Megstamiausi_receptai, Valgymo_receptas, Valgomas_produktas
 from django.contrib.auth.decorators import login_required
@@ -54,8 +57,62 @@ import openpyxl
 import pandas as pd
 from django.http import JsonResponse
 
-import pandas as pd
-from django.shortcuts import render
+
+def generate_recommendations(request):
+    categories = ['Pusryčiai', 'Pietus', 'Vakarienė', 'Papildomai']
+    recommendations = {}
+
+    for category in categories:
+        if random.choice([True, False]):  # Randomly choose between a recipe or a product
+            recommendation = random.choice(Receptai.objects.filter(visible=True))
+            recommendations[category.lower()] = f"Receptas: {recommendation.pavadinimas} - {recommendation.aprasas}"
+        else:
+            recommendation = random.choice(Product.objects.all())
+            recommendations[category.lower()] = f"Produktas: {recommendation.name} - {recommendation.category}"
+
+    # Create DataFrame from recommendations
+    df = pd.DataFrame(recommendations.items(), columns=['Category', 'Recommendation'])
+
+    # Save DataFrame to Excel file
+    file_path = os.path.join(settings.BASE_DIR, 'individual_rekomendations.xlsx')  # Use BASE_DIR to get the project directory
+    df.to_excel(file_path, index=False)
+
+    # Serve the file for download
+    with open(file_path, 'rb') as file:
+        response = HttpResponse(file.read(), content_type='application/vnd.ms-excel')
+        response['Content-Disposition'] = 'attachment; filename=individual_rekomendations.xlsx'
+        return response
+
+
+def get_valgiarastis_totals(request):
+    selected_date = request.session.get('selectedDate')
+    naudotojas = Naudotojai.objects.get(user=request.user)
+
+    if not selected_date:
+        return None, None
+
+    valgiarastis = get_object_or_404(Valgiarasciai, fk_Naudotojasid_Naudotojas=naudotojas, data=selected_date)
+    valgymai_list = Valgymai.objects.filter(
+        fk_Valgiarastisid_Valgiarastis__data=selected_date,
+        fk_Valgiarastisid_Valgiarastis__fk_Naudotojasid_Naudotojas=naudotojas
+    ).prefetch_related('valgymo_receptas_set').prefetch_related('valgomas_produktas_set')
+
+    total_fenilalaninas = 0
+    total_baltymas = 0
+
+    for valgymas in valgymai_list:
+        for valgomasreceptas in valgymas.valgymo_receptas_set.all():
+            receptas = valgomasreceptas.fk_Receptasid_Receptas
+            total_weight = Recepto_produktai.objects.filter(fk_Receptasid_Receptas=receptas).aggregate(total_weight=models.Sum('amount'))['total_weight']
+            total_fenilalaninas += round(valgomasreceptas.kiekis / total_weight * Decimal(receptas.fenilalaninas), 1)
+            total_baltymas += round(valgomasreceptas.kiekis / total_weight * Decimal(receptas.baltymai), 1)
+
+        for valgomasproduktas in valgymas.valgomas_produktas_set.all():
+            total_fenilalaninas += round(valgomasproduktas.kiekis / 100 * Decimal(valgomasproduktas.fk_Produktasid_Produktas.phenylalanine), 1)
+            total_baltymas += round(valgomasproduktas.kiekis / 100 * Decimal(valgomasproduktas.fk_Produktasid_Produktas.protein), 1)
+
+    return total_fenilalaninas, total_baltymas
+
 
 def rekomendacijos(request):
     # Read the Excel file
@@ -69,10 +126,16 @@ def rekomendacijos(request):
         data = excel_data.parse(sheet_name).to_dict(orient='records')
         data_dict[sheet_name] = data
 
-    # Pass the data to the template
-    return render(request, 'rekomendacijos.html', {'data_dict': data_dict})
+    # Get totals for bendras_fenilalaninas and bendras_baltymas
+    bendras_fenilalaninas, bendras_baltymas = get_valgiarastis_totals(request)
 
-
+    # Pass the data and totals to the template
+    context = {
+        'data_dict': data_dict,
+        'bendras_fenilalaninas': bendras_fenilalaninas,
+        'bendras_baltymas': bendras_baltymas,
+    }
+    return render(request, 'rekomendacijos.html', context)
 
 
 def valgiarastisAny(request):
