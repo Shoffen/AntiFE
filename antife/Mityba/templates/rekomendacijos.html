@@ -40,43 +40,41 @@
         </div>
         <h1>Pusryčiai</h1>
         
-        <!-- Buttons and tables for each sheet -->
-        {% for sheet_name, data in data_dict.items %}
-        <div class="mb-3">
-            <button class="btn btn-primary" onclick="toggleTable('{{ sheet_name }}')">Rekomendacijos - {{ sheet_name }}</button>
-            <table id="dataTable_{{ sheet_name }}" class="table table-striped table-bordered" style="display:none;">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>Pavadinimas</th>
-                        <th>Kiekis</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in data %}
-                    <tr>
-                        <td>{{ item.Pavadinimas }}</td>
-                        <td>{{ item.Kiekis }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% endfor %}
-
-        <!-- Button to generate recommendations -->
-        <button class="btn btn-success" onclick="generateRecommendations()">Generuoti individualias rekomendacijas</button>
-
-
-        <!-- Section to display recommendations -->
-        <div class="recommendations" id="recommendations" style="display:none;">
-            <h2>Individualios rekomendacijos</h2>
-            <div id="pusryciai"></div>
-            <div id="pietus"></div>
-            <div id="vakariene"></div>
-            <div id="papildomai"></div>
-        </div>
+       <!-- Buttons and tables for each sheet -->
+    {% for sheet_name, data in data_dict.items %}
+    <div class="mb-3">
+        <button class="btn btn-primary" onclick="toggleTable('{{ sheet_name }}')">Rekomendacijos - {{ sheet_name }}</button>
+        <table id="dataTable_{{ sheet_name }}" class="table table-striped table-bordered" style="display:none;">
+            <thead class="thead-dark">
+                <tr>
+                    {% if sheet_name == 'Individualios_rek' %}
+                    <th>Category</th>
+                    <th>Recommendation</th>
+                    {% else %}
+                    <th>Pavadinimas</th>
+                    <th>Kiekis</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% if sheet_name == 'Individualios_rek' %}
+                <tr>
+                    <td>{{ data.Category }}</td>
+                    <td>{{ data.Recommendation }}</td>
+                </tr>
+                {% else %}
+                {% for item in data %}
+                <tr>
+                    <td>{{ item.Pavadinimas }}</td>
+                    <td>{{ item.Kiekis }}</td>
+                </tr>
+                {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
     </div>
-
+    {% endfor %}
+</div>
     <!-- Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
@@ -93,22 +91,6 @@
                 table.style.display = 'none';
             }
         }
-
-        function generateRecommendations() {
-            fetch('{% url "generate_recommendations" %}')
-            .then(response => response.blob())
-            .then(blob => {
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = 'individual_rekomendations.xlsx';
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-            });
-        }
-
 
     </script>
 </body>

@@ -23,7 +23,6 @@ urlpatterns = [
     path('receptukurimas/', views.create_recipe_view, name='create_recipe'),
     path('panaudotireceptai/', views.panaudotireceptai, name='panaudoti_receptai'),
     path('receptai_list/<int:recipe_id>/edit/', views.edit_recipe, name='edit_recipe'),
-    path('generate_recommendations/', views.generate_recommendations, name='generate_recommendations'),
     path('rekomendacijos/', views.rekomendacijos, name='rekomendacijos'),
     path('receptai_listt/<int:recipe_id>/', views.toggle_recipe_visibility, name='toggle_recipe_visibility')
 ]

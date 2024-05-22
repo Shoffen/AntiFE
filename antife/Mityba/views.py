@@ -57,33 +57,6 @@ import openpyxl
 import pandas as pd
 from django.http import JsonResponse
 
-
-def generate_recommendations(request):
-    categories = ['Pusryčiai', 'Pietus', 'Vakarienė', 'Papildomai']
-    recommendations = {}
-
-    for category in categories:
-        if random.choice([True, False]):  # Randomly choose between a recipe or a product
-            recommendation = random.choice(Receptai.objects.filter(visible=True))
-            recommendations[category.lower()] = f"Receptas: {recommendation.pavadinimas} - {recommendation.aprasas}"
-        else:
-            recommendation = random.choice(Product.objects.all())
-            recommendations[category.lower()] = f"Produktas: {recommendation.name} - {recommendation.category}"
-
-    # Create DataFrame from recommendations
-    df = pd.DataFrame(recommendations.items(), columns=['Category', 'Recommendation'])
-
-    # Save DataFrame to Excel file
-    file_path = os.path.join(settings.BASE_DIR, 'individual_rekomendations.xlsx')  # Use BASE_DIR to get the project directory
-    df.to_excel(file_path, index=False)
-
-    # Serve the file for download
-    with open(file_path, 'rb') as file:
-        response = HttpResponse(file.read(), content_type='application/vnd.ms-excel')
-        response['Content-Disposition'] = 'attachment; filename=individual_rekomendations.xlsx'
-        return response
-
-
 def get_valgiarastis_totals(request):
     selected_date = request.session.get('selectedDate')
     naudotojas = Naudotojai.objects.get(user=request.user)
@@ -114,6 +87,8 @@ def get_valgiarastis_totals(request):
     return total_fenilalaninas, total_baltymas
 
 
+import pandas as pd
+
 def rekomendacijos(request):
     # Read the Excel file
     excel_data = pd.ExcelFile('rekomendacijos.xlsx')
@@ -123,8 +98,13 @@ def rekomendacijos(request):
     
     # Loop through each sheet and convert the Excel data to a list of dictionaries
     for sheet_name in excel_data.sheet_names:
-        data = excel_data.parse(sheet_name).to_dict(orient='records')
-        data_dict[sheet_name] = data
+        if sheet_name == 'Individualios_rek':
+            data = pd.read_excel('rekomendacijos.xlsx', sheet_name=sheet_name)
+            data_dict[sheet_name] = data
+        else:
+            data = excel_data.parse(sheet_name).to_dict(orient='records')
+            data_dict[sheet_name] = data
+
 
     # Get totals for bendras_fenilalaninas and bendras_baltymas
     bendras_fenilalaninas, bendras_baltymas = get_valgiarastis_totals(request)
@@ -136,6 +116,7 @@ def rekomendacijos(request):
         'bendras_baltymas': bendras_baltymas,
     }
     return render(request, 'rekomendacijos.html', context)
+
 
 
 def valgiarastisAny(request):
