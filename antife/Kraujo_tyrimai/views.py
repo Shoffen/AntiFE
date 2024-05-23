@@ -8,18 +8,26 @@ from django.utils import timezone
 import datetime
 from datetime import datetime
 import plotly.express as px
+from dateutil.relativedelta import relativedelta
 
 @login_required
 def create_kraujo_tyrimas(request):
     if request.method == 'POST':
         data = request.POST.get('data')
         fenilalaninas = request.POST.get('fenilalaninas')
-        selected_year = int(request.POST.get('selected_year'))  # Retrieve selected year
+        selected_year = request.POST.get('selected_year')
+        year = int(data[:4])
+        if selected_year:  # Check if selected_year is not empty
+            selected_year = int(selected_year)  # Convert to integer if not empty
+        else:
+            selected_year = year  # Set selected_year to None if it's empty
         
+      
         # Check if both data and fenilalaninas are empty
         if not data or not fenilalaninas:
             messages.error(request, 'Užpildykite formą')
             return redirect('kraujo_tyrimai:kraujotyrview', selected_year=selected_year)  # Pass selected year
+       #
         
         # Fetch the corresponding Naudotojai instance
         naudotojai_instance = Naudotojai.objects.get(user=request.user)
