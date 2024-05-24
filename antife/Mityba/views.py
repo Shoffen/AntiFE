@@ -53,6 +53,8 @@ def valgiarastisAny(request):
     # Extract the clicked date from the URL parameter
     clicked_date = request.GET.get('date', '')  # Default to empty string if not provided
     clicked_date_str = request.GET.get('date', '')
+    selected_year = request.GET.get('selected_year', '')
+    print ("OOOOOOOOOOOOOOOOO" + selected_year)
     print(clicked_date)
     
     # Split the date string by spaces and take the first element as the year
@@ -99,18 +101,22 @@ def valgiarastisAny(request):
 
     # Query the blood samples filtered by user and sorted by date
     blood_samples = Kraujo_tyrimai.objects.filter(fk_Naudotojasid_Naudotojas=request.user.naudotojai).order_by('data')
-
-    # Find the closest sample to the selected date
-    closest_sample = None
-    for sample in reversed(blood_samples):
-        sample_date = sample.data
-        if sample_date < clicked_date:
-            closest_sample = sample
-            break
-
-    # Print the closest sample
-    print ("Selected data:", clicked_date)
-    print("Closest blood sample:", closest_sample.data)
+    if blood_samples.count() >= 2:
+        # Find the closest sample to the selected date
+        closest_sample = None
+        for sample in reversed(blood_samples):
+            sample_date = sample.data
+            if sample_date < clicked_date:
+                closest_sample = sample
+                break
+        if closest_sample == None:
+            messages.error(request, 'Analizei trūksta duomenų')
+            return redirect('kraujo_tyrimai:kraujotyrview', selected_year=selected_year)  # Pass selected 
+    else:
+          # Print the closest sample
+       
+        messages.error(request, 'Analizei trūksta duomenų')
+        return redirect('kraujo_tyrimai:kraujotyrview', selected_year = selected_year)  # Pass selected year
     
     context = {
 
