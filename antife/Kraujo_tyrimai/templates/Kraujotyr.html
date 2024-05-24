@@ -353,14 +353,17 @@ plotlyGraph.on('plotly_click', function(data) {
             document.getElementById("deleteForm").submit();
         };
 
-        // Analyze Button Click
         document.getElementById("analyzeBtn").onclick = function() {
-            // Retrieve the necessary data (e.g., date)
-            const clickedDate = clickedData.x;
+    // Retrieve the necessary data (e.g., date)
+    const clickedDate = clickedData.x;
 
-            // Redirect to Profilis.html with the necessary data
-            window.location.href = "{% url 'mityba:valgiarastisAnalysis' %}?date=" + encodeURIComponent(clickedDate);
-        };
+    // Retrieve the selected year from the checkbox
+    const selectedYearCheckbox = document.querySelector('input[name="year"]:checked');
+    const selectedYear = selectedYearCheckbox ? selectedYearCheckbox.value : '';
+
+    // Redirect to Profilis.html with the necessary data
+    window.location.href = "{% url 'mityba:valgiarastisAnalysis' %}?date=" + encodeURIComponent(clickedDate) + "&selected_year=" + encodeURIComponent(selectedYear);
+};
     }
 });
 
@@ -387,3 +390,4 @@ plotlyGraph.on('plotly_click', function(data) {
     </script>
     
 {% endblock %}
+ 
