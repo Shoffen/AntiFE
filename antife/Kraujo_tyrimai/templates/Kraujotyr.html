@@ -5,6 +5,10 @@
     Kraujo Tyrimai
 {% endblock %}
 
+<img src="{% static 'images/good.png' %}" alt="Good">
+<img src="{% static 'images/bad.png' %}" alt="Bad">
+<img src="{% static 'images/not_found.png' %}" alt="Not Found">
+
 {% block content %}
     <style>
         /* CSS styles inline */
@@ -22,21 +26,21 @@
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             padding: 20px;
-            max-width: 350px; /* Adjust the width of the forms */
-            width: 100%; /* Ensure each form takes up the same width */
-            height: 270px; /* Set a fixed height for both form containers */
-            margin: 0 auto 20px; /* Center the forms and add space below them */
+            max-width: 350px;
+            width: 100%;
+            margin: 0 auto 20px;
+            box-sizing: border-box;
         }
         label {
             display: inline-block;
-            width: 100%; /* Set the width of the label */
+            width: 100%;
             margin-bottom: 10px;
             color: #555;
         }
         input[type="date"],
         input[type="number"],
         select {
-            width: 100%; /* Set the width of the input fields */
+            width: 100%;
             padding: 10px;
             margin-bottom: 15px;
             border: 1px solid #ccc;
@@ -89,7 +93,7 @@
         .tooltip {
             position: relative;
             display: inline-block;
-            border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+            border-bottom: 1px dotted black;
         }
         .tooltip .tooltiptext {
             visibility: hidden;
@@ -115,7 +119,7 @@
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            gap: 20px; /* Add space between the forms */
+            gap: 20px;
         }
         .form-container .input-container {
             display: flex;
@@ -123,18 +127,26 @@
             justify-content: space-between;
         }
         select {
-            margin-bottom: 25px; /* Add margin to the bottom of the select element */
+            margin-bottom: 25px;
         }
         .form-container:first-child .filtruoti-btn {
-            margin-top: 30px; /* Adjust the margin-top value to move the button downwards */
+            margin-top: 30px;
         }
         h1 {
             text-align: center;
             color: #333;
-            margin-top: 20px; /* Add space between the top of the page and the h1 */
-            margin-bottom: 20px; /* Add space below the h1 */
+            margin-top: 20px;
+            margin-bottom: 20px;
         }
-        /* Popup Modal Styles */
+        .checkbox-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .checkbox-container label {
+            width: calc(33.333% - 10px);
+            box-sizing: border-box;
+        }
         .modal {
             display: none;
             position: fixed;
@@ -153,10 +165,8 @@
             margin: 5% auto;
             padding: 20px;
             border: 1px solid #888;
-            /* Adjust the width of the modal content */
-            width: 20%; /* You can change this value as needed */
+            width: 20%;
         }
-
         .close {
             color: #aaa;
             float: right;
@@ -186,6 +196,11 @@
         .button-container button:hover {
             background-color: #45a049;
         }
+        .filter-form-container {
+        /*max-width: 380px; */ 
+        height: 255px;/* Adjust this value to make the form wider */
+    }
+
     </style>
 
     <h1>Kraujo tyrimų sekimas</h1>
@@ -199,35 +214,21 @@
             {% endfor %}
         </div>
     {% endif %}
-    <style>
-        /* Existing styles */
-        /* ... */
-        /* Add the following style */
-        .checkbox-container {
-            display: flex;
-            flex-wrap: wrap;
-        }
-        .checkbox-container input[type="checkbox"] {
-            margin-right: 10px;
-        }
-    </style>
-    
     
     <div class="form-wrapper">
-        <div class="form-container">
-            <form method="post" action="{% url 'kraujo_tyrimai:kraujotyrview' %}">
+        <div class="form-container filter-form-container">
+            <form id="filterForm" method="post" action="{% url 'kraujo_tyrimai:kraujotyrview' %}">
                 {% csrf_token %}
                 <h2>Filtruoti pagal metus</h2>
-                {% for year in years %}
-                    <label for="year{{ year }}" style="display: inline-block; margin-right: 10px;">
-                        <input type="checkbox" name="year" id="year{{ year }}" value="{{ year }}" {% if year == selected_year %} checked {% endif %}>
-                        {{ year }}
-                    </label>
-                {% endfor %}
-                <input type="submit" value="Filtruoti" class="filtruoti-btn">
+                <div class="checkbox-container">
+                    {% for year in years %}
+                        <label for="year{{ year }}">
+                            <input type="checkbox" name="year" id="year{{ year }}" value="{{ year }}" {% if year == selected_year %} checked {% endif %}>
+                            {{ year }}
+                        </label>
+                    {% endfor %}
+                </div>
             </form>
-            
-            
         </div>
         
         <div class="form-container">
@@ -252,7 +253,6 @@
         {{ chart|safe }}
     {% endif %}
 
-    <!-- Popup Modal -->
     <div id="popupModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -261,7 +261,6 @@
                 <button id="deleteBtn">Ištrinti</button>
                 <button id="analyzeBtn">Analizė</button>
             </div>
-            <!-- Edit form -->
             <form id="editForm" action="{% url 'kraujo_tyrimai:save_tyrimas' %}" method="post" style="display: none;">
                 {% csrf_token %}
                 <input type="hidden" id="editSelectedDataPointId" name="selectedDataPointId" value="">
@@ -276,9 +275,7 @@
                     <input type="number" id="editFenilalaninas" name="editedFenilalaninas">
                 </div>
                 <input type="submit" value="Išsaugoti">
-
             </form>
-
         </div>
     </div>
     <form id="deleteForm" action="{% url 'kraujo_tyrimai:delete_tyrimas' %}" method="post" style="display: none;">
@@ -289,22 +286,20 @@
     </form>
     
     <script src="https://mpl-cursors-temmiexue.vercel.app/dist/mplcursors.min.js"></script>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> <!-- Add Plotly.js library -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const yearCheckboxes = document.querySelectorAll('input[name="year"]');
-    
-            // Event listener for checkbox clicks
+            const filterForm = document.getElementById('filterForm');
+
             yearCheckboxes.forEach(function(checkbox) {
                 checkbox.addEventListener('change', function(event) {
-                    if (event.target.checked) {
-                        // Uncheck all other checkboxes
-                        yearCheckboxes.forEach(function(otherCheckbox) {
-                            if (otherCheckbox !== event.target) {
-                                otherCheckbox.checked = false;
-                            }
-                        });
-                    }
+                    yearCheckboxes.forEach(function(otherCheckbox) {
+                        if (otherCheckbox !== event.target) {
+                            otherCheckbox.checked = false;
+                        }
+                    });
+                    filterForm.submit();
                 });
             });
         });
@@ -312,82 +307,50 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Get the plotly graph
             const plotlyGraph = document.querySelector('.plotly-graph-div');
-    
-            // When the user clicks on a data point, show the popup modal
-plotlyGraph.on('plotly_click', function(data) {
-    if(data.points.length > 0) {
-        // Show the modal
-        document.getElementById("popupModal").style.display = "block";
 
-        // Store the clicked data for later use
-        const clickedData = data.points[0];
-        
-        // Edit Button Click
-        document.getElementById("editBtn").onclick = function() {
-            // Retrieve the necessary data (e.g., date and phenylalanine amount)
-            const clickedDate = clickedData.x;
-            const phenylalanineAmount = clickedData.y; // Example, replace with actual data retrieval
+            plotlyGraph.on('plotly_click', function(data) {
+                if(data.points.length > 0) {
+                    document.getElementById("popupModal").style.display = "block";
+                    const clickedData = data.points[0];
 
-            // Fill in the edit form with the clicked data
-            document.getElementById("editDate").value = clickedDate; // Prepopulate date input field
-            document.getElementById("editFenilalaninas").value = phenylalanineAmount;
+                    document.getElementById("editBtn").onclick = function() {
+                        const clickedDate = clickedData.x;
+                        const phenylalanineAmount = clickedData.y;
 
-            // Set the value of the hidden input field to the clicked date for edit form
-            document.getElementById("editSelectedDataPointId").value = clickedDate;
+                        document.getElementById("editDate").value = clickedDate;
+                        document.getElementById("editFenilalaninas").value = phenylalanineAmount;
+                        document.getElementById("editSelectedDataPointId").value = clickedDate;
+                        document.getElementById("editForm").style.display = "block";
+                    };
 
-            // Show the edit form in the modal
-            document.getElementById("editForm").style.display = "block";
-        };
+                    document.getElementById("deleteBtn").onclick = function() {
+                        const clickedDate = clickedData.x;
+                        document.getElementById("deleteSelectedDataPointId").value = clickedDate;
+                        document.getElementById("deleteForm").submit();
+                    };
 
-        // Delete Button Click
-        document.getElementById("deleteBtn").onclick = function() {
-            // Retrieve the necessary data (e.g., date)
-            const clickedDate = clickedData.x;
+                    document.getElementById("analyzeBtn").onclick = function() {
+                        const clickedDate = clickedData.x;
+                        const selectedYearCheckbox = document.querySelector('input[name="year"]:checked');
+                        const selectedYear = selectedYearCheckbox ? selectedYearCheckbox.value : '';
+                        window.location.href = "{% url 'mityba:valgiarastisAnalysis' %}?date=" + encodeURIComponent(clickedDate) + "&selected_year=" + encodeURIComponent(selectedYear);
+                    };
+                }
+            });
 
-            // Set the value of the hidden input field for delete form
-            document.getElementById("deleteSelectedDataPointId").value = clickedDate;
-
-            // Submit the delete form
-            document.getElementById("deleteForm").submit();
-        };
-
-        document.getElementById("analyzeBtn").onclick = function() {
-    // Retrieve the necessary data (e.g., date)
-    const clickedDate = clickedData.x;
-
-    // Retrieve the selected year from the checkbox
-    const selectedYearCheckbox = document.querySelector('input[name="year"]:checked');
-    const selectedYear = selectedYearCheckbox ? selectedYearCheckbox.value : '';
-
-    // Redirect to Profilis.html with the necessary data
-    window.location.href = "{% url 'mityba:valgiarastisAnalysis' %}?date=" + encodeURIComponent(clickedDate) + "&selected_year=" + encodeURIComponent(selectedYear);
-};
-    }
-});
-
-            // Get the <span> element that closes the modal
             var span = document.getElementsByClassName("close")[0];
-    
-            // When the user clicks on <span> (x), close the modal
             span.onclick = function() {
                 document.getElementById("popupModal").style.display = "none";
-                // Hide the edit form when closing the modal
                 document.getElementById("editForm").style.display = "none";
             }
-    
-            // When the user clicks anywhere outside of the modal, close it
             window.onclick = function(event) {
                 var modal = document.getElementById("popupModal");
                 if (event.target == modal) {
                     modal.style.display = "none";
-                    // Hide the edit form when clicking outside the modal
                     document.getElementById("editForm").style.display = "none";
                 }
             }
         });
     </script>
-    
 {% endblock %}
- 
