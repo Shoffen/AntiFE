@@ -540,6 +540,23 @@ def copyValgiarastis(request):
 
     return valgymai_list(request)
 
+def edit_valgomasReceptas(request):
+    id = request.GET.get('id')
+    amount = request.GET.get('amount')
+    valgomas_receptas = get_object_or_404(Valgymo_receptas, id=id)
+    valgomas_receptas.kiekis = amount
+    valgomas_receptas.save()
+    return valgymai_list(request)
+
+def edit_valgomasProduktas(request):
+    id = request.GET.get('id')
+    amount = request.GET.get('amount')
+    valgomas_produktas = get_object_or_404(Valgomas_produktas, id=id)
+    valgomas_produktas.kiekis = amount
+    valgomas_produktas.save()
+    return valgymai_list(request)
+
+
 from datetime import datetime
 from django.shortcuts import render
 from homepage.models import Kraujo_tyrimai
