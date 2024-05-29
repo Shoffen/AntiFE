@@ -1,6 +1,7 @@
 {% extends "base.html" %}
-
+{% load static %} 
 {% block content %}
+<body>
     <div class="container">
         <h2>Mano Receptai</h2>
 
@@ -10,8 +11,9 @@
             <thead>
                 <tr>
                     <th>Pavadinimas</th>
-                    <th>Kalorijos</th>
-                    <th>Fenilalaninas</th>
+                    <th>Kalorijos (kcal)</th>
+                    <th>Fenilalaninas (mg)</th>
+                    <th>Baltymai (g)</th>
                     <th>Veiksmai</th>
                 </tr>
             </thead>
@@ -22,6 +24,7 @@
                             <td class="name-cell" data-toggle="aprasas-{{ forloop.counter }}" data-ingredientai="ingredientai-{{ forloop.counter }}">{{ receptas.pavadinimas }}</td>
                             <td>{{ receptas.kalorijos }}</td>
                             <td>{{ receptas.fenilalaninas }}</td>
+                            <td>{{ receptas.baltymai }}</td>
                             <td>
                                 <div class="toggle-buttons-container" id="toggle-buttons-container-{{ forloop.counter }}">
                                     <button class="btn btn-secondary toggle-buttons-icon"><i class="fas fa-ellipsis-h"></i></button>
@@ -59,7 +62,7 @@
             </tbody>
         </table>
     </div>
-
+</body>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // Event listener for clicking on recipe cells
@@ -169,7 +172,10 @@
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            background-color: #f4f4f4;
+            background-image: url("{% static 'styles/paveiksleliai/R.png' %}");
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
             margin: 0;
             padding: 0;
         }

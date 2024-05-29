@@ -9,24 +9,22 @@
     z-index: 1000; /* Ensure it appears above other elements */
 }
 
-
 .hidden {
-  display: none;
+    display: none;
 }
 
 .back-button {
-        background-color: blue;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
+    background-color: blue;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
 
 .back-button:hover {
     background-color: darkblue;
 }
-
 </style>   
 
 <div class="container">
@@ -37,57 +35,61 @@
     <form id="recipeForm">
         {% csrf_token %}
         
-        <div class="form-group">
+        <div class="form-group" style="width: 64%;">
             <label for="recipeName">Recepto pavadinimas:</label>
-            <input type="text" id="recipeName" name="recipeName" class="form-control" value="{{ recipe.pavadinimas }}" required>
+            <input type="text" id="recipeName" name="recipeName" class="form-control" style="width: calc(100% - 170px);" value="{{ recipe.pavadinimas }}" required>
+        </div>
+
+        <div class="col-sm-6">
+            <div id="ingredientList">
+                <!-- Populate existing ingredient fields -->
+                {% for recepto_produktai in recipe.recepto_produktai_set.all %}
+                <div class="ingredient" data-id="{{ recepto_produktai.id }}">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="ingredient{{ forloop.counter }}">Ingredientas:</label>
+                                <input type="text" id="ingredient{{ forloop.counter }}" name="ingredient[]" class="form-control" value="{{ recepto_produktai.fk_Produktasid_Produktas.name }}" required>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="form-group">
+                                <label for="amount{{ forloop.counter }}">Kiekis (gramais):</label>
+                                <input type="number" id="amount{{ forloop.counter }}" name="amount[]" class="form-control" value="{{ recepto_produktai.amount }}" required>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <button type="button" class="btn btn-danger removeIngredient">✕</button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
         </div>
 
         <div class="row">
             <div class="col-sm-6">
                 <div class="form-group">
                     <label for="searchIngredient">Paieška:</label>
-                    <input type="text" id="searchIngredient" class="form-control search-input" placeholder="Ieškoti produkto...">
+                    <input type="text" id="searchIngredient" class="form-control search-input" placeholder="Norėdami pridėti ingredientą įveskite pavadinimą ir pasirinkite">
                     <div class="dropdown-menu" id="ingredientDropdown">
                         <div class="dropdown-content">
                             {% for product_name in product_names %}
-                                <div class="ingredient-option">{{ product_name }}</div>
+                            <div class="ingredient-option">{{ product_name }}</div>
                             {% endfor %}
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-sm-6">
-                <div id="ingredientList">
-                    <!-- Populate existing ingredient fields -->
-                    {% for recepto_produktai in recipe.recepto_produktai_set.all %}
-                    <div class="ingredient">
-                        <div class="row">
-                            <div class="col-sm-6">
-                                <div class="form-group">
-                                    <label for="ingredient{{ forloop.counter }}">Ingredientas:</label>
-                                    <input type="text" id="ingredient{{ forloop.counter }}" name="ingredient[]" class="form-control" value="{{ recepto_produktai.fk_Produktasid_Produktas.name }}" required>
-                                </div>
-                            </div>
-                            <div class="col-sm-4">
-                                <div class="form-group">
-                                    <label for="amount{{ forloop.counter }}">Kiekis (gramais):</label>
-                                    <input type="number" id="amount{{ forloop.counter }}" name="amount[]" class="form-control" value="{{ recepto_produktai.amount }}" required>
-                                </div>
-                            </div>
-                            <div class="col-sm-2">
-                                <button type="button" class="btn btn-danger removeIngredient">✕</button>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" style="width: 49%;">
             <label for="recipeSummary">Aprašas:</label>
-            <textarea id="recipeSummary" name="recipeSummary" class="form-control" rows="4" style="white-space: pre-line;">{{ recipe.aprasas }}</textarea>
+            <textarea id="recipeSummary" name="recipeSummary" class="form-control" rows="4" style="width: 100%; white-space: pre-line;">{{ recipe.aprasas }}</textarea>
         </div>
+
+        <!-- Hidden input to store removed ingredient IDs -->
+        <input type="hidden" id="removedIngredients" name="removedIngredients" value="">
 
         <button type="submit" class="btn btn-success">Atnaujinti receptą</button>
     </form>
@@ -95,114 +97,119 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const searchIngredientInput = document.getElementById('searchIngredient');
-        const ingredientDropdown = document.getElementById('ingredientDropdown');
-        const ingredientOptions = ingredientDropdown ? ingredientDropdown.querySelectorAll('.ingredient-option') : [];
-        const ingredientList = document.getElementById('ingredientList');
+    const searchIngredientInput = document.getElementById('searchIngredient');
+    const ingredientDropdown = document.getElementById('ingredientDropdown');
+    const ingredientOptions = ingredientDropdown ? ingredientDropdown.querySelectorAll('.ingredient-option') : [];
+    const ingredientList = document.getElementById('ingredientList');
+    const removedIngredientsInput = document.getElementById('removedIngredients');
+    let removedIngredients = [];
 
-        
+    searchIngredientInput.addEventListener('input', function (event) {
+        const query = event.target.value.trim();
 
-        
-
-
-        searchIngredientInput.addEventListener('input', function (event) {
-            const query = event.target.value.trim();
-
-            ingredientOptions.forEach(option => {
-                const productName = option.textContent;
-                if (productName.toLowerCase().includes(query.toLowerCase())) {
-                    option.style.display = '';
-                } else {
-                    option.style.display = 'none';
-                }
-            });
-
-            if (ingredientDropdown) {
-                ingredientDropdown.style.display = 'block';
+        ingredientOptions.forEach(option => {
+            const productName = option.textContent;
+            if (productName.toLowerCase().includes(query.toLowerCase())) {
+                option.style.display = '';
+            } else {
+                option.style.display = 'none';
             }
         });
 
         if (ingredientDropdown) {
-            ingredientDropdown.addEventListener('click', function (event) {
-                if (event.target.classList.contains('ingredient-option')) {
-                    const selectedIngredient = event.target.textContent;
-                    const emptyIngredientFields = ingredientList.querySelectorAll('.ingredient input[name="ingredient[]"]:not([value])');
+            ingredientDropdown.style.display = 'block';
+        }
+    });
 
-                    if (emptyIngredientFields.length > 0) {
-                        // If there are empty ingredient fields, populate the first one
-                        emptyIngredientFields[0].value = selectedIngredient;
-                    } else {
-                        // If no empty fields, create a new ingredient field
-                        const newIngredient = document.createElement('div');
-                        newIngredient.classList.add('ingredient');
+    if (ingredientDropdown) {
+        ingredientDropdown.addEventListener('click', function (event) {
+            if (event.target.classList.contains('ingredient-option')) {
+                const selectedIngredient = event.target.textContent;
+                const emptyIngredientFields = ingredientList.querySelectorAll('.ingredient input[name="ingredient[]"]:not([value])');
 
-                        newIngredient.innerHTML = `
-                            <div class="row">
-                                <div class="col-sm-6">
-                                    <div class="form-group">
-                                        <label for="ingredient${ingredientList.children.length + 1}">Ingredientas:</label>
-                                        <input type="text" id="ingredient${ingredientList.children.length + 1}" name="ingredient[]" class="form-control" value="${selectedIngredient}" required>
-                                    </div>
-                                </div>
-                                <div class="col-sm-4">
-                                    <div class="form-group">
-                                        <label for="amount${ingredientList.children.length + 1}">Kiekis (gramais):</label>
-                                        <input type="number" id="amount${ingredientList.children.length + 1}" name="amount[]" class="form-control" required>
-                                    </div>
-                                </div>
-                                <div class="col-sm-2">
-                                    <button type="button" class="btn btn-danger removeIngredient">✕</button>
+                if (emptyIngredientFields.length > 0) {
+                    emptyIngredientFields[0].value = selectedIngredient;
+                } else {
+                    const newIngredient = document.createElement('div');
+                    newIngredient.classList.add('ingredient');
+
+                    newIngredient.innerHTML = `
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <label for="ingredient${ingredientList.children.length + 1}">Ingredientas:</label>
+                                    <input type="text" id="ingredient${ingredientList.children.length + 1}" name="ingredient[]" class="form-control" value="${selectedIngredient}" required>
                                 </div>
                             </div>
-                        `;
-                        ingredientList.appendChild(newIngredient);
-                    }
-
-                    if (ingredientDropdown) {
-                        ingredientDropdown.style.display = 'none';
-                    }
+                            <div class="col-sm-4">
+                                <div class="form-group">
+                                    <label for="amount${ingredientList.children.length + 1}">Kiekis (gramais):</label>
+                                    <input type="number" id="amount${ingredientList.children.length + 1}" name="amount[]" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-sm-2">
+                                <button type="button" class="btn btn-danger removeIngredient">✕</button>
+                            </div>
+                        </div>
+                    `;
+                    ingredientList.appendChild(newIngredient);
                 }
-            });
-        }
 
-        ingredientList.addEventListener('click', function (event) {
-            if (event.target.classList.contains('removeIngredient')) {
-                event.target.closest('.ingredient').remove();
+                if (ingredientDropdown) {
+                    ingredientDropdown.style.display = 'none';
+                }
             }
         });
+    }
 
-        const recipeForm = document.getElementById('recipeForm');
-        recipeForm.addEventListener('submit', function (event) {
-            event.preventDefault();
+    ingredientList.addEventListener('click', function (event) {
+        if (event.target.classList.contains('removeIngredient')) {
+            const ingredientElement = event.target.closest('.ingredient');
+            const ingredientId = ingredientElement.dataset.id;
 
-            const formData = new FormData(this);
+            if (ingredientId) {
+                removedIngredients.push(ingredientId);
+                removedIngredientsInput.value = JSON.stringify(removedIngredients);
+            }
 
-            // Serialize ingredient data as JSON array
-            const ingredients = [];
-            document.querySelectorAll('.ingredient').forEach(ingredient => {
-                const name = ingredient.querySelector('input[name="ingredient[]"]').value;
-                const amount = ingredient.querySelector('input[name="amount[]"]').value;
-                ingredients.push({ name, amount });
-            });
-            formData.append('ingredients', JSON.stringify(ingredients));
+            ingredientElement.remove();
+        }
+    });
 
-            fetch('', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Server response:', data);
-                if (data.message) {
-                    alert('Recipe updated successfully!');
-                    window.location.href = '/mityba/manoreceptai_list';
-                } else {
-                    alert('Failed to update recipe.');
-                }
-            })
-            .catch(error => console.error('Error updating recipe:', error));
+    const recipeForm = document.getElementById('recipeForm');
+    recipeForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const formData = new FormData(this);
+
+        const ingredients = [];
+        document.querySelectorAll('.ingredient').forEach(ingredient => {
+            const name = ingredient.querySelector('input[name="ingredient[]"]').value;
+            const amount = ingredient.querySelector('input[name="amount[]"]').value;
+            ingredients.push({ name, amount });
+        });
+        formData.append('ingredients', JSON.stringify(ingredients));
+
+        fetch('', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Server response:', data);
+            if (data.message) {
+                alert('Recipe updated successfully!');
+                window.location.href = '/mityba/manoreceptai_list';
+            } else {
+                alert('Failed to update recipe.');
+                console.error('Error response:', data);
+            }
+        })
+        .catch(error => {
+            console.error('Error updating recipe:', error);
         });
     });
+});
 </script>
 
 {% endblock %}
