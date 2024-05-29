@@ -2,19 +2,23 @@
 
 {% extends "base.html" %}
 
+{% load static %}  <!-- Load the static tag library here -->
+
 {% block content %}
+<body>
     <div class="container">
         <h2>Receptai</h2>
 
         <a href="{% url 'mityba:create_recipe' %}" class="btn btn-primary custom-button">Sukurti naują receptą</a>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+        
 
         <table class="styled-table">
             <thead>
                 <tr>
                     <th>Pavadinimas</th>
                     <th>Kalorijos (kcal)</th>
-                    <th>Fenilalaninas</th>
+                    <th>Fenilalaninas (mg)</th>
                     <th>Baltymai (g)</th>
                     <th></th>
                 </tr>
@@ -49,7 +53,7 @@
             </tbody>
         </table>
     </div>
-
+</body>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // Event listener for clicking on recipe cells
@@ -106,7 +110,10 @@
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            background-color: #f4f4f4;
+            background-image: url("{% static 'styles/paveiksleliai/R.png' %}");
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
             margin: 0;
             padding: 0;
         }
@@ -114,7 +121,7 @@
         .container {
             max-width: 800px;
             margin: 20px auto;
-            background-color: #fff;
+            background-color: rgba(255, 255, 255, 0.8); /* White with 80% opacity */
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -126,6 +133,7 @@
             margin: 20px 0;
             font-size: 16px;
             text-align: left;
+            
         }
 
         .styled-table th,

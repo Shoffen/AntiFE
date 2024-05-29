@@ -175,32 +175,46 @@ def toggle_recipe_visibility(request, recipe_id):
     else:
         return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
 
-@login_required    
+  
+
+
+
+@login_required
 def edit_recipe(request, recipe_id):
-    # Fetch the recipe from the database using the recipe_id
-    recipe = Receptai.objects.get(pk=recipe_id)
-    # Pass the recipe object to the template
+    recipe = get_object_or_404(Receptai, pk=recipe_id)
     products = Product.objects.all()
     product_names = [product.name for product in products]
 
     if request.method == 'POST':
         try:
-            # Extract form data
             recipe_name = request.POST.get('recipeName')
             recipe_summary = request.POST.get('recipeSummary')
             ingredient_names = request.POST.getlist('ingredient[]')
             ingredient_amounts = request.POST.getlist('amount[]')
+            removed_ingredients = request.POST.get('removedIngredients', '[]')
+
+            logger.info(f"Received form data: recipeName={recipe_name}, recipeSummary={recipe_summary}")
+            logger.info(f"Ingredients: {ingredient_names}, Amounts: {ingredient_amounts}, Removed: {removed_ingredients}")
+
+            if removed_ingredients:
+                removed_ingredients = json.loads(removed_ingredients)
+            else:
+                removed_ingredients = []
 
             # Update recipe object with new data
             recipe.pavadinimas = recipe_name
             recipe.aprasas = recipe_summary
             recipe.save()
 
+            # Remove deleted ingredients
+            for ingredient_id in removed_ingredients:
+                Recepto_produktai.objects.filter(pk=ingredient_id).delete()
+
             # Update or create ingredient objects for the recipe
             for ingredient_name, ingredient_amount in zip(ingredient_names, ingredient_amounts):
                 product, created = Product.objects.get_or_create(name=ingredient_name)
                 ingredient_amount_decimal = Decimal(ingredient_amount)
-                # Update or create Recepto_produktai instance
+
                 recepto_produktai, created = Recepto_produktai.objects.get_or_create(
                     fk_Receptasid_Receptas=recipe,
                     fk_Produktasid_Produktas=product,
@@ -213,9 +227,11 @@ def edit_recipe(request, recipe_id):
             return JsonResponse({'message': 'Recipe updated successfully!'})
 
         except Exception as e:
+            logger.error(f"Error updating recipe: {e}", exc_info=True)
             return JsonResponse({'error': str(e)}, status=500)
 
     return render(request, 'edit_recipe.html', {'products': products, 'product_names': product_names, 'recipe': recipe})
+
 
 @login_required
 def manoreceptai_list(request):

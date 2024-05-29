@@ -4,16 +4,20 @@
 {% block title %}
   Product List - Django App
 {% endblock %}
-
+{% load static %}
 {% block content %}
+<body>
 <head>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <style>
     body {
       font-family: 'Arial', sans-serif;
-      background-color: #f4f4f4;
       margin: 0;
       padding: 0;
+      background-image: url("{% static 'styles/paveiksleliai/productback2.jpg' %}");
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
     }
 
     .tooltip-text {
@@ -141,7 +145,7 @@
 
 </head>
 
-<body>
+
   <div class="container">
     <h1 class="blue-text">Produktų maistingumo peržiūra</h1>
     <div class="icon-container">
