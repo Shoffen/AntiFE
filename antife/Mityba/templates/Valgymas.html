@@ -212,33 +212,49 @@ h2{
         </thead>
         <tbody>
           {% for valgomasreceptas in valgymas.valgymo_receptas_set.all %}
-            <tr>
-              <td class="hoverable" data-aprasas="Ingridientai:
-    {% for recepto_produktas in valgomasreceptas.fk_Receptasid_Receptas.recepto_produktai_set.all %}{{ recepto_produktas.fk_Produktasid_Produktas.name }} - {{ recepto_produktas.amount }} g. {% if not forloop.last %} {% endif %}
-    {% endfor %}&#10;Aprašymas:&#10;    {{ valgomasreceptas.fk_Receptasid_Receptas.aprasas }}">
+<tr>
+  <td class="hoverable" data-aprasas="Ingridientai: 
+{% for recepto_produktas in valgomasreceptas.fk_Receptasid_Receptas.recepto_produktai_set.all %}
+    {{ recepto_produktas.fk_Produktasid_Produktas.name }} - {{ recepto_produktas.amount }} g.{% if not forloop.last %}, {% endif %}
+{% endfor %}
+&#10;Aprašymas:&#10; {{ valgomasreceptas.fk_Receptasid_Receptas.aprasas }}">
     {{ valgomasreceptas.fk_Receptasid_Receptas.pavadinimas }}
-</td>
-              <td>{{ valgomasreceptas.kiekis }} </td>
-              <td>{{ valgomasreceptas.total_baltymas }} </td>
-              <td>{{ valgomasreceptas.total_fenilalaninas }} </td>
-              <td class="styled-cell"><form action="{% url 'mityba:delete_valgomasReceptas' valgymo_receptas_id=valgomasreceptas.id %}" method="post">
-                {% csrf_token %}
-                <button class="btn btn-danger" type="submit">X</button>
-            </form></td>
-            </tr>
-          {% endfor %}
-          {% for valgomasproduktas in valgymas.valgomas_produktas_set.all %}
-            <tr>
-              <td>{{ valgomasproduktas.fk_Produktasid_Produktas.name }}</td>
-              <td>{{ valgomasproduktas.kiekis }} </td>
-              <td>{{ valgomasproduktas.total_baltymas }} </td>
-              <td>{{ valgomasproduktas.total_fenilalaninas }} </td>
-              <td class="styled-cell"><form action="{% url 'mityba:delete_valgomasProduktas' valgomas_produktas_id=valgomasproduktas.id %}" method="post">
-                {% csrf_token %}
-                <button class="btn btn-danger" type="submit">X</button>
-            </form></td>
-            </tr>
-          {% endfor %}
+  </td>
+  <td>
+    <span class="kiekis-display">{{ valgomasreceptas.kiekis }}</span>
+    <input type="number" class="kiekis-input hidden" value="{{ valgomasreceptas.kiekis }}">
+  </td>
+  <td>{{ valgomasreceptas.total_baltymas }}</td>
+  <td>{{ valgomasreceptas.total_fenilalaninas }}</td>
+  <td class="styled-cell">
+    <button class="btn btn-primary edit-button" data-id="{{ valgomasreceptas.id }}" data-type="receptas">✎</button>
+    <button class="btn btn-success save-kiekis-button hidden" data-id="{{ valgomasreceptas.id }}" data-type="receptas">💾</button>
+    <form action="{% url 'mityba:delete_valgomasReceptas' valgymo_receptas_id=valgomasreceptas.id %}" method="post" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">✖</button>
+    </form>
+  </td>
+</tr>
+{% endfor %}
+{% for valgomasproduktas in valgymas.valgomas_produktas_set.all %}
+<tr>
+  <td>{{ valgomasproduktas.fk_Produktasid_Produktas.name }}</td>
+  <td>
+    <span class="kiekis-display">{{ valgomasproduktas.kiekis }}</span>
+    <input type="number" class="kiekis-input hidden" value="{{ valgomasproduktas.kiekis }}">
+  </td>
+  <td>{{ valgomasproduktas.total_baltymas }}</td>
+  <td>{{ valgomasproduktas.total_fenilalaninas }}</td>
+  <td class="styled-cell">
+    <button class="btn btn-primary edit-button" data-id="{{ valgomasproduktas.id }}" data-type="produktas">✎</button>
+    <button class="btn btn-success save-kiekis-button hidden" data-id="{{ valgomasproduktas.id }}" data-type="produktas">💾</button>
+    <form action="{% url 'mityba:delete_valgomasProduktas' valgomas_produktas_id=valgomasproduktas.id %}" method="post" style="display:inline;">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">✖</button>
+    </form>
+  </td>
+</tr>
+{% endfor %}
         </tbody>
       </table>
       {% endif %}
@@ -419,5 +435,43 @@ function pasteMealPlan() {
   });
 }
 
+//editinimas
+document.querySelectorAll('.edit-button').forEach(button => {
+    button.addEventListener('click', function() {
+        const parentTd = this.parentElement.parentElement;
+        const displaySpan = parentTd.querySelector('.kiekis-display');
+        const inputField = parentTd.querySelector('.kiekis-input');
+        const saveButton = parentTd.querySelector('.save-kiekis-button');
+
+        displaySpan.classList.add('hidden');
+        inputField.classList.remove('hidden');
+        saveButton.classList.remove('hidden');
+        this.classList.add('hidden');
+    });
+});
+
+document.querySelectorAll('.save-kiekis-button').forEach(button => {
+    button.addEventListener('click', function() {
+        const parentTd = this.parentElement.parentElement;
+        const inputField = parentTd.querySelector('.kiekis-input');
+        const newAmount = inputField.value;
+
+        if (newAmount.trim() === '') {
+            alert('Kiekis negali būti tuščias!');
+            return;
+        }
+
+        if (parseFloat(newAmount) < 0) {
+            alert('Kiekis negali būti neigiamas!');
+            return;
+        }
+
+        const itemId = this.getAttribute('data-id');
+        const itemType = this.getAttribute('data-type');
+        const url = itemType === 'receptas' ? `{% url 'mityba:edit_valgomasReceptas' %}?id=${itemId}&amount=${newAmount}` : `{% url 'mityba:edit_valgomasProduktas' %}?id=${itemId}&amount=${newAmount}`;
+
+        window.location.href = url;
+    });
+});
 </script>
 {% endblock %}
