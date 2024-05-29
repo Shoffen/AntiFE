@@ -16,12 +16,12 @@ def create_kraujo_tyrimas(request):
         fenilalaninas = request.POST.get('fenilalaninas')
         selected_year = request.POST.get('selected_year')  # Retrieve selected year
 
-
+        print(selected_year)
       # Check if selected_year is 'None' as a string
         
         if not data or not fenilalaninas:
             messages.error(request, 'Užpildykite formą')
-            return redirect('kraujo_tyrimai:kraujotyrview', selected_year=int(data[:4]))  # Pass selected year
+            return redirect('kraujo_tyrimai:kraujotyrview', selected_year)  # Pass selected year
         
         # Fetch the corresponding Naudotojai instance
         naudotojai_instance = Naudotojai.objects.get(user=request.user)
@@ -32,7 +32,7 @@ def create_kraujo_tyrimas(request):
         if data_obj > today:
             # If the selected date is greater than today's date, display an error message
             messages.error(request, 'Pasirinkta negalima data.')
-            return redirect('kraujo_tyrimai:kraujotyrview', selected_year=int(data[:4]))  # Pass selected year
+            return redirect('kraujo_tyrimai:kraujotyrview', selected_year)  # Pass selected year
         
         # Check if a Kraujotyr already exists for the given date and user
         existing_kraujotyr = Kraujo_tyrimai.objects.filter(Q(data=data) & Q(fk_Naudotojasid_Naudotojas=naudotojai_instance)).exists()
@@ -46,10 +46,10 @@ def create_kraujo_tyrimas(request):
             messages.success(request, 'Kraujo tyrimas sėkmingai pridėtas.')
         
         # Redirect to the 'kraujotyrview' view with the selected year
-        return redirect('kraujo_tyrimai:kraujotyrview', selected_year=int(data[:4]))
+        return redirect('kraujo_tyrimai:kraujotyrview', selected_year)
 
     # If the request method is not POST, render the 'kraujotyrview' template
-    return redirect('kraujo_tyrimai:kraujotyrview', selected_year=int(data[:4]))
+    return redirect('kraujo_tyrimai:kraujotyrview', selected_year)
 
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
