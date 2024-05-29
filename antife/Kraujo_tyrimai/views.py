@@ -260,30 +260,54 @@ def kraujotyrview(request, selected_year=None):
         fig.update_traces(hovertemplate=hover_text)
 
         # Determine the maximum value of Fenilalaninas
-        max_fenilalaninas = max(sorted_phenylalanine)
+        max_fenilalaninas = max(sorted_phenylalanine, default=0)
         
-        # Set the default range for the y-axis
-        y_axis_upper_limit = max_fenilalaninas * 1.1  # Increase by 10% for padding
+        # Set the default range for the y-axis to be at least 800
+        y_axis_upper_limit = max(800, max_fenilalaninas * 1.1)  # Ensure at least 800
+        
         fig.update_layout(yaxis=dict(range=[0, y_axis_upper_limit]))
         # Update layout to disable legend
         fig.update_layout(showlegend=False)
+
+        num_points = len(filtered_data_points)
+        print(num_points)
+        if num_points > 1:
+            # Define the green background zone, always including it regardless of the number of points
+            fig.update_layout(
+        shapes=[
+            # Green rectangle for the background
+            {
+                'type': 'rect',
+                'x0': formatted_dates[0] if formatted_dates else "",  # Start date of the green zone
+                'x1': formatted_dates[-1] if formatted_dates else "",  # End date of the green zone
+                'y0': green_zone[0],  # Lower limit of the y-axis
+                'y1': green_zone[1],  # Upper limit of the y-axis
+                'fillcolor': 'rgba(173, 255, 47, 0.2)',  # Green color with opacity
+                'line': {'width': 0},  # No border line
+                'layer': 'below',  # Ensure the green zone is below the main plot
+            },
+        ]
+    )
+        else:
+           
+            # Define the green background zone
+            fig.update_layout(
+    shapes=[
+        # Green rectangle for the background
+        {
+            'type': 'rect',
+            'x0': 0,  # Start date of the green zone (assuming it starts at the beginning of the x-axis)
+            'x1': 1,  # End date of the green zone (assuming it extends to the end of the x-axis)
+            'y0': 120,  # Lower limit of the y-axis for the green zone
+            'y1': 600,  # Upper limit of the y-axis for the green zone
+            'fillcolor': 'rgba(173, 255, 47, 0.2)',  # Green color with opacity
+            'line': {'width': 0},  # No border line
+            'layer': 'below',  # Ensure the green zone is below the main plot
+        },
+    ]
+)
+
         
-        # Define the green background zone
-        fig.update_layout(
-            shapes=[
-                # Green rectangle for the background
-                {
-                    'type': 'rect',
-                    'x0': formatted_dates[0],  # Start date of the green zone
-                    'x1': formatted_dates[-1],  # End date of the green zone
-                    'y0': green_zone[0],  # Lower limit of the y-axis
-                    'y1': green_zone[1],  # Upper limit of the y-axis
-                    'fillcolor': 'rgba(173, 255, 47, 0.2)',  # Green color with opacity
-                    'line': {'width': 0},  # No border line
-                    'layer': 'below',  # Ensure the green zone is below the main plot
-                },
-            ]
-        )
         
         # Convert plot to HTML
         chart = fig.to_html()
