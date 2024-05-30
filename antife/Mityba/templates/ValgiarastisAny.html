@@ -72,7 +72,14 @@
                     behavior: 'smooth'
                 });
             },
-            events: []
+            events: [],
+            eventTimeFormat: { // suppress the time display
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false,
+                meridiem: false,
+                omitZeroMinute: true
+            }
         });
     
         function getDateRange(startDate, endDate) {
@@ -97,54 +104,71 @@
 
     valgiarasciai.forEach(function(valgiarastis) {
         if(valgiarastis.fields.bendras_fenilalaninas != 0 || valgiarastis.fields.bendras_baltymas!= 0) {
-            var color = valgiarastis.fields.bendras_fenilalaninas <= 620 ? 'green' : 'red';
+            var color = valgiarastis.fields.bendras_fenilalaninas <= 600  && valgiarastis.fields.bendras_fenilalaninas >= 120 ? 'green' : 'red';
             calendar.addEvent({
-            title: phen + Math.round(valgiarastis.fields.bendras_fenilalaninas),
-            start: valgiarastis.fields.data,
-            textColor: color
-        });
-        calendar.addEvent({
-            title: balt + Math.round(valgiarastis.fields.bendras_baltymas, 1),
-            start: valgiarastis.fields.data,
-            textColor: color
-        });
+                title: phen + Math.round(valgiarastis.fields.bendras_fenilalaninas),
+                start: valgiarastis.fields.data,
+                textColor: color,
+                allDay: true
+            });
+            calendar.addEvent({
+                title: balt + Math.round(valgiarastis.fields.bendras_baltymas, 1),
+                start: valgiarastis.fields.data,
+                textColor: color,
+                allDay: true
+            });
         }
     });
+
     dateRange.forEach(function(date) {
-    // Find the valgiarastis for the current date
-    var valgiarastisForDate = valgiarasciai.find(function(valgiarastis) {
-        return new Date(valgiarastis.fields.data).toDateString() === date.toDateString();
-    });
+        // Find the valgiarastis for the current date
+        var valgiarastisForDate = valgiarasciai.find(function(valgiarastis) {
+            return new Date(valgiarastis.fields.data).toDateString() === date.toDateString();
+        });
 
-    // Check if valgiarastis exists for the current date
-    if (valgiarastisForDate) {
-        var phenValue = valgiarastisForDate.fields.bendras_fenilalaninas;
+        // Check if valgiarastis exists for the current date
+        if (valgiarastisForDate) {
+            var phenValue = valgiarastisForDate.fields.bendras_fenilalaninas;
 
-        // Set the title based on phenylalanine value
-        var title;
-        if (phenValue > 620) {
-            title = 'Blogas';
-        } else if (phenValue >= 120 && phenValue <= 620) {
-            title = 'Geras';
+            // Set the title based on phenylalanine value
+            var title;
+            if (phenValue > 600) 
+            {
+                title = 'Blogas';
+                textColor = 'red';
+            }
+            else if(phenValue < 120 &&phenValue > 0)
+            {
+                title = 'Blogas';
+                textColor = 'red';
+            } 
+            else if (phenValue >= 120 && phenValue <= 600) 
+            {
+                title = 'Geras';
+                textColor = 'green';
+            }
+            else {
+                title = 'Nerasta';
+                textColor = 'black';
+            }
+
+            // Add event to the calendar with the determined title
+            calendar.addEvent({
+                title: title,
+                start: date,
+                allDay: true,
+                textColor: textColor
+            });
         } else {
-            title = 'Nerasta';
+            // Add event to the calendar if valgiarastis is non-existing for the current date
+            calendar.addEvent({
+                title: 'Nerasta',
+                start: date,
+                allDay: true,
+                textColor: 'black',
+            });
         }
-
-        // Add event to the calendar with the determined title
-        calendar.addEvent({
-            title: title,
-            start: date,
-            
-        });
-    } else {
-        // Add event to the calendar if valgiarastis is non-existing for the current date
-        calendar.addEvent({
-            title: 'Nerasta',
-            start: date,
-        });
-    }
-});
-
+    });
 
     calendar.render();
     });
@@ -186,7 +210,5 @@
         });
     }
 }
-
-
 </script>
 {% endblock %}
