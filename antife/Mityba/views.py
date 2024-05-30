@@ -57,6 +57,25 @@ import openpyxl
 import pandas as pd
 from django.http import JsonResponse
 
+from django.views.decorators.csrf import csrf_exempt
+from django.core.management import call_command
+from io import StringIO
+import json
+
+@csrf_exempt
+def generate_recommendations_view(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        bendras_baltymas = data.get('bendras_baltymas')
+        bendras_fenilalaninas = data.get('bendras_fenilalaninas')
+        
+        # Call the management command and pass the variables
+        call_command('generate_recommendations', bendras_baltymas, bendras_fenilalaninas)
+        
+        return JsonResponse({'message': 'Recommendations generated successfully'})
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
 def get_valgiarastis_totals(request):
     selected_date = request.session.get('selectedDate')
     naudotojas = Naudotojai.objects.get(user=request.user)
