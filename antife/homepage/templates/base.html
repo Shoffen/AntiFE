@@ -6,6 +6,7 @@
   <title>
     {% block title %}
       Django App
+      {% load static %}
     {% endblock %}
   </title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
@@ -27,6 +28,15 @@
     /* Hover effect */
     button.custom-button:hover {
       background-color: #0056b3; /* Darker Blue */
+    }
+    
+    /* Profile image style */
+    .navbar .profile-img {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      object-fit: cover;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -62,7 +72,9 @@
         </li>
         {% if request.user.is_authenticated %}
         <li class="nav-item active">
-          <a class="nav-link" href="{% url 'profilis:profilisview' %}">Profilis</a>
+          <a class="nav-link" href="{% url 'profilis:profilisview' %}">
+            <img src="{% static 'images/profile.jpg' %}" alt="Profile" class="profile-img">
+          </a>
         </li>
         {% endif %}
       </ul>
