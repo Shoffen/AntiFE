@@ -4,19 +4,27 @@
     Forumas
 {% endblock %}
 
+{% load static %}
 {% block content %}
+
+<style>
+    body {
+        background-image: url("{% static 'styles/pexels-photo-1640773.jpeg' %}"); 
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+</style>
+
 <div id="message-container" class="alert" style="display: none;"></div>
 <div class="container">
+    <!-- Viršutinė dalis su antraštėmis ir mygtuku -->
     <div class="row justify-content-center">
         <h1 class="text-center">Forumas</h1>
     </div>
-    <div class="row justify-content-center">
-        <!-- Button to toggle the form visibility -->
-        <button id="toggle-form-btn" class="btn btn-primary mb-3 custom-buttonn">Sukurti naują temą</button>
-    </div>
 
     <!-- Form to allow users to create a new topic (initially hidden) -->
-    <form id="create-topic-form" method="post" action="{% url 'Forumas:create_topic' %}" style="display: none;">
+    <form id="create-topic-form" method="post" action="{% url 'Forumas:create_topic' %}">
         {% csrf_token %}
         <div class="form-group">
             <label for="topic_title">Temos pavadinimas:</label>
@@ -32,7 +40,7 @@
         </div>
         <div class="form-group">
             <label for="post_text">Tekstas:</label>
-            <div id="editor" style="height: 300px;"></div> <!-- This div will be replaced by Quill.js -->
+            <div id="editor" style="height: 300px; background-color: white;"></div>
             <input type="hidden" name="text" id="hidden_input"> <!-- Hidden input to store Quill's HTML content -->
         </div>
         <button type="submit" class="btn btn-primary">Sukurti tema</button>
@@ -44,27 +52,7 @@
                 <button type="button" class="segment-btn">Klausimai bendruomenei</button>
                 <button type="button" class="segment-btn">Klausimai moderatoriams</button>
             </div>
-            <div class="container d-flex justify-content-center">
-                <!-- Dropdown menus to select comment and post ordering -->
-                <div class="form-group d-flex">
-                    <!-- Dropdown for comment ordering -->
-                    <div class="mr-3">
-                        <label for="comment-order" class="mr-2">Rūšiuoti komentarus pagal:</label>
-                        <select class="form-control" id="comment-order">
-                            <option value="likes_desc">Populiariausi</option>
-                            <option value="date_desc">Naujausi</option>
-                        </select>
-                    </div>
-                    <!-- Dropdown for post ordering -->
-                    <div>
-                        <label for="post-order" class="mr-2">Rūšiuoti įrašus pagal:</label>
-                        <select class="form-control" id="post-order">
-                            <option value="likes_desc">Populiariausi</option>
-                            <option value="date_desc">Naujausi</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+           
         </form>
 
         <hr>
@@ -141,6 +129,10 @@
 
     <style>
 
+         .ql-toolbar {
+        background-color: white !important;
+        }
+        
         .custom-buttonn {
         background-color: #ff9500;
         border-color: #ff9500;

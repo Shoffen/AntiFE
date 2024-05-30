@@ -108,6 +108,8 @@ def get_valgiarastis_totals(request):
 
 import pandas as pd
 
+import pandas as pd
+
 def rekomendacijos(request):
     # Read the Excel file
     excel_data = pd.ExcelFile('rekomendacijos.xlsx')
@@ -118,9 +120,11 @@ def rekomendacijos(request):
     # Loop through each sheet and convert the Excel data to a list of dictionaries
     for sheet_name in excel_data.sheet_names:
         if sheet_name == 'Individualios_rek':
+            # For Individualios_rek sheet, read data differently
             data = pd.read_excel('rekomendacijos.xlsx', sheet_name=sheet_name)
-            data_dict[sheet_name] = data
+            data_dict[sheet_name] = data.to_dict(orient='records')
         else:
+            # For other sheets, parse normally
             data = excel_data.parse(sheet_name).to_dict(orient='records')
             data_dict[sheet_name] = data
 
@@ -135,6 +139,7 @@ def rekomendacijos(request):
         'bendras_baltymas': bendras_baltymas,
     }
     return render(request, 'rekomendacijos.html', context)
+
 
 
 
