@@ -1,3 +1,6 @@
+import os
+import random
+from django.conf import settings
 from django.shortcuts import render, HttpResponse, redirect, get_object_or_404
 from homepage.models import Product, Receptai, Kraujo_tyrimai, Naudotojai, Valgymai, Valgiarasciai, Recepto_produktai, Naudotojo_receptai, Megstamiausi_receptai, Valgymo_receptas, Valgomas_produktas
 from django.contrib.auth.decorators import login_required
@@ -49,6 +52,97 @@ from django.db.models import Min
 from datetime import datetime
 from django.db.models import Min, ExpressionWrapper, F, DurationField
 
+
+import openpyxl
+import pandas as pd
+from django.http import JsonResponse
+
+from django.views.decorators.csrf import csrf_exempt
+from django.core.management import call_command
+from io import StringIO
+import json
+
+@csrf_exempt
+def generate_recommendations_view(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        bendras_baltymas = data.get('bendras_baltymas')
+        bendras_fenilalaninas = data.get('bendras_fenilalaninas')
+        
+        # Call the management command and pass the variables
+        call_command('generate_recommendations', bendras_baltymas, bendras_fenilalaninas)
+        
+        return JsonResponse({'message': 'Recommendations generated successfully'})
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+def get_valgiarastis_totals(request):
+    selected_date = request.session.get('selectedDate')
+    naudotojas = Naudotojai.objects.get(user=request.user)
+
+    if not selected_date:
+        return None, None
+
+    valgiarastis = get_object_or_404(Valgiarasciai, fk_Naudotojasid_Naudotojas=naudotojas, data=selected_date)
+    valgymai_list = Valgymai.objects.filter(
+        fk_Valgiarastisid_Valgiarastis__data=selected_date,
+        fk_Valgiarastisid_Valgiarastis__fk_Naudotojasid_Naudotojas=naudotojas
+    ).prefetch_related('valgymo_receptas_set').prefetch_related('valgomas_produktas_set')
+
+    total_fenilalaninas = 0
+    total_baltymas = 0
+
+    for valgymas in valgymai_list:
+        for valgomasreceptas in valgymas.valgymo_receptas_set.all():
+            receptas = valgomasreceptas.fk_Receptasid_Receptas
+            total_weight = Recepto_produktai.objects.filter(fk_Receptasid_Receptas=receptas).aggregate(total_weight=models.Sum('amount'))['total_weight']
+            total_fenilalaninas += round(valgomasreceptas.kiekis / total_weight * Decimal(receptas.fenilalaninas), 1)
+            total_baltymas += round(valgomasreceptas.kiekis / total_weight * Decimal(receptas.baltymai), 1)
+
+        for valgomasproduktas in valgymas.valgomas_produktas_set.all():
+            total_fenilalaninas += round(valgomasproduktas.kiekis / 100 * Decimal(valgomasproduktas.fk_Produktasid_Produktas.phenylalanine), 1)
+            total_baltymas += round(valgomasproduktas.kiekis / 100 * Decimal(valgomasproduktas.fk_Produktasid_Produktas.protein), 1)
+
+    return total_fenilalaninas, total_baltymas
+
+
+import pandas as pd
+
+import pandas as pd
+
+def rekomendacijos(request):
+    # Read the Excel file
+    excel_data = pd.ExcelFile('rekomendacijos.xlsx')
+    
+    # Dictionary to store data from each sheet
+    data_dict = {}
+    
+    # Loop through each sheet and convert the Excel data to a list of dictionaries
+    for sheet_name in excel_data.sheet_names:
+        if sheet_name == 'Individualios_rek':
+            # For Individualios_rek sheet, read data differently
+            data = pd.read_excel('rekomendacijos.xlsx', sheet_name=sheet_name)
+            data_dict[sheet_name] = data.to_dict(orient='records')
+        else:
+            # For other sheets, parse normally
+            data = excel_data.parse(sheet_name).to_dict(orient='records')
+            data_dict[sheet_name] = data
+
+
+    # Get totals for bendras_fenilalaninas and bendras_baltymas
+    bendras_fenilalaninas, bendras_baltymas = get_valgiarastis_totals(request)
+
+    # Pass the data and totals to the template
+    context = {
+        'data_dict': data_dict,
+        'bendras_fenilalaninas': bendras_fenilalaninas,
+        'bendras_baltymas': bendras_baltymas,
+    }
+    return render(request, 'rekomendacijos.html', context)
+
+
+
+
 def valgiarastisAny(request):
     # Extract the clicked date from the URL parameter
     clicked_date = request.GET.get('date', '')  # Default to empty string if not provided
@@ -92,9 +186,6 @@ def valgiarastisAny(request):
     naudotojas = Naudotojai.objects.get(user=request.user)
     valgiarasciai = Valgiarasciai.objects.filter(fk_Naudotojasid_Naudotojas=naudotojas)
     valgiarasciai_json = serialize('json', valgiarasciai)
-
-    
-
     
         # Parse the selected date
     clicked_date = datetime(int(clicked_year), int(clicked_month), int(clicked_day)).date()

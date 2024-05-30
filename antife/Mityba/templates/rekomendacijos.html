@@ -1,0 +1,147 @@
+{% load static %}
+{% block content %}
+
+<style>
+    body {
+        background-image: url("{% static 'styles/paveiksleliai/back2.jpg' %}"); 
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+</style>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+    body {
+        background-image: url("{% static 'styles/paveiksleliai/back2.jpg' %}"); 
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        padding: 20px;
+        color: white;
+        text-align: center; /* Center align text */
+    }
+    h1 { 
+        margin-bottom: 20px; 
+        color: white; /* Ensure h1 text is white */
+    }
+    .table {
+        margin: 0 auto; /* Center align table */
+        width: 80%; /* Set table width */
+        background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
+        color: black; /* Set table text color to black for better visibility */
+    }
+    .totals { 
+        margin-bottom: 20px; 
+        text-align: center; /* Center align totals */
+        font-size: 24px; /* Larger font size */
+        font-weight: bold; /* Bold font weight */
+        color: #6567f0; /* Orange color for visibility */
+    }
+    .recommendations { 
+        margin-top: 20px; 
+        text-align: left; /* Align recommendations to the left */
+    }
+    .individual-label {
+        margin-top: 50px; 
+        font-weight: bold;
+        font-size: 18px; 
+    }
+    .btn {
+        color: white;
+        background-color: #007bff; /* Blue color for buttons */
+        border-color: #007bff;
+    }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button id="generateBtn" class="btn btn-success mb-3">Generuoti</button>
+        
+        {% for sheet_name, data in data_dict.items %}
+        <div class="mb-3">
+            <button class="btn btn-primary" onclick="toggleTable('{{ sheet_name }}')">Rekomendacijos - {{ sheet_name }}</button>
+            <table id="dataTable_{{ sheet_name }}" class="table table-striped table-bordered" {% if forloop.last %}style="display: table;"{% else %}style="display: none;"{% endif %}>
+                <thead class="thead-dark">
+                    <tr>
+                        {% if sheet_name == 'Individualios_rek' %}
+                        <th scope="col">Category</th>
+                        <th scope="col">Recommendation</th>
+                        {% else %}
+                        <th scope="col">Pavadinimas</th>
+                        <th scope="col">Kiekis</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if sheet_name == 'Individualios_rek' %}
+                        {% for item in data %}
+                        <tr>
+                            <td>{{ item.Category }}</td>
+                            <td>{{ item.Recommendation }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        {% for item in data %}
+                        <tr>
+                            <td>{{ item.Pavadinimas }}</td>
+                            <td>{{ item.Kiekis }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <script>
+        function toggleTable(sheetName) {
+            var table = document.getElementById('dataTable_' + sheetName);
+            if (table.style.display === 'none') {
+                table.style.display = 'table';
+                table.classList.add('fadeInTable');
+            } else {
+                table.style.display = 'none';
+            }
+        }
+
+        document.getElementById('generateBtn').addEventListener('click', function() {
+            var bendrasBaltymas = "{{ bendras_baltymas }}";
+            var bendrasFenilalaninas = "{{ bendras_fenilalaninas }}";
+            var csrfToken = '{{ csrf_token }}';
+
+            fetch('/mityba/generate-recommendations/', {  // Ensure the correct URL prefix
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    bendras_baltymas: bendrasBaltymas,
+                    bendras_fenilalaninas: bendrasFenilalaninas
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);
+                // Reload the page after generating recommendations
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
+{% endblock %}

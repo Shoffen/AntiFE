@@ -276,6 +276,7 @@ h2{
   </div>
   <button class="btn btn-success" id="copyMealPlanButton" onclick="copyMealPlan()">Kopijuoti valgiaraštį</button>
   <button class="btn btn-success hidden" id="pasteMealPlanButton" onclick="pasteMealPlan()">Įklijuoti nukopijuotą valgiaraštį</button>
+  <button class="btn btn-success" id="rekomendacijosButton" onclick="openRekomendacijos()">Rekomendacijos</button>
   <div id="confirmationDialog" class="confirmation-dialog hidden">
     <div class="dialog-content">
       <p>Ar tikrai norite pakeisti dabartinį mitybos planą, nukopijuotu?</p>
@@ -433,6 +434,12 @@ function pasteMealPlan() {
   document.getElementById('cancelPaste').addEventListener('click', () => {
     confirmationDialog.classList.add('hidden');
   });
+}
+function openRekomendacijos() {
+    // Open a new popup window with the 'rekomendacijos' URL
+    const popupWindow = window.open("{% url 'mityba:rekomendacijos' %}", "Rekomendacijos", "width=600,height=400");
+    // Focus on the newly opened window
+    popupWindow.focus();
 }
 
 //editinimas
