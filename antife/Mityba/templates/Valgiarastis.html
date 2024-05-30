@@ -57,10 +57,10 @@
             selectedDate = info.startStr;
             updateCreateButton();
 
-            window.scrollTo({
-                top: document.body.scrollHeight,
-                behavior: 'smooth'
-            });
+            // window.scrollTo({
+            //     top: document.body.scrollHeight,
+            //     behavior: 'smooth'
+            // });
         },
         events: []
         
@@ -104,15 +104,16 @@
         createButtonEl.setAttribute("data-date", selectedDate);
         if (selectedDate) {
             console.log(selectedDate);
-            createButtonEl.style.display = "block";
+            //createButtonEl.style.display = "block";
+            createValgiarastis(selectedDate);
         } else {
             createButtonEl.style.display = "none";
         }
     }
 
-    function createValgiarastis() {
+    function createValgiarastis(selectedDate) {
     const createButtonEl = document.getElementById("createBtn");
-    const selectedDate = createButtonEl.getAttribute("data-date");
+    //const selectedDate = createButtonEl.getAttribute("data-date");
     if (selectedDate) {
         fetch("{% url 'mityba:create_valgiarastis' %}", {
             method: 'POST',

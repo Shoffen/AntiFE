@@ -123,6 +123,8 @@ def valgiarastisAny(request):
     # Extract the clicked date from the URL parameter
     clicked_date = request.GET.get('date', '')  # Default to empty string if not provided
     clicked_date_str = request.GET.get('date', '')
+    selected_year = request.GET.get('selected_year', '')
+    print ("OOOOOOOOOOOOOOOOO" + selected_year)
     print(clicked_date)
     
     # Split the date string by spaces and take the first element as the year
@@ -166,18 +168,22 @@ def valgiarastisAny(request):
 
     # Query the blood samples filtered by user and sorted by date
     blood_samples = Kraujo_tyrimai.objects.filter(fk_Naudotojasid_Naudotojas=request.user.naudotojai).order_by('data')
-
-    # Find the closest sample to the selected date
-    closest_sample = None
-    for sample in reversed(blood_samples):
-        sample_date = sample.data
-        if sample_date < clicked_date:
-            closest_sample = sample
-            break
-
-    # Print the closest sample
-    print ("Selected data:", clicked_date)
-    print("Closest blood sample:", closest_sample.data)
+    if blood_samples.count() >= 2:
+        # Find the closest sample to the selected date
+        closest_sample = None
+        for sample in reversed(blood_samples):
+            sample_date = sample.data
+            if sample_date < clicked_date:
+                closest_sample = sample
+                break
+        if closest_sample == None:
+            messages.error(request, 'Analizei trūksta duomenų')
+            return redirect('kraujo_tyrimai:kraujotyrview', selected_year=selected_year)  # Pass selected 
+    else:
+          # Print the closest sample
+       
+        messages.error(request, 'Analizei trūksta duomenų')
+        return redirect('kraujo_tyrimai:kraujotyrview', selected_year = selected_year)  # Pass selected year
     
     context = {
 
@@ -236,32 +242,46 @@ def toggle_recipe_visibility(request, recipe_id):
     else:
         return JsonResponse({'success': False, 'error': 'Method not allowed'}, status=405)
 
-@login_required    
+  
+
+
+
+@login_required
 def edit_recipe(request, recipe_id):
-    # Fetch the recipe from the database using the recipe_id
-    recipe = Receptai.objects.get(pk=recipe_id)
-    # Pass the recipe object to the template
+    recipe = get_object_or_404(Receptai, pk=recipe_id)
     products = Product.objects.all()
     product_names = [product.name for product in products]
 
     if request.method == 'POST':
         try:
-            # Extract form data
             recipe_name = request.POST.get('recipeName')
             recipe_summary = request.POST.get('recipeSummary')
             ingredient_names = request.POST.getlist('ingredient[]')
             ingredient_amounts = request.POST.getlist('amount[]')
+            removed_ingredients = request.POST.get('removedIngredients', '[]')
+
+            logger.info(f"Received form data: recipeName={recipe_name}, recipeSummary={recipe_summary}")
+            logger.info(f"Ingredients: {ingredient_names}, Amounts: {ingredient_amounts}, Removed: {removed_ingredients}")
+
+            if removed_ingredients:
+                removed_ingredients = json.loads(removed_ingredients)
+            else:
+                removed_ingredients = []
 
             # Update recipe object with new data
             recipe.pavadinimas = recipe_name
             recipe.aprasas = recipe_summary
             recipe.save()
 
+            # Remove deleted ingredients
+            for ingredient_id in removed_ingredients:
+                Recepto_produktai.objects.filter(pk=ingredient_id).delete()
+
             # Update or create ingredient objects for the recipe
             for ingredient_name, ingredient_amount in zip(ingredient_names, ingredient_amounts):
                 product, created = Product.objects.get_or_create(name=ingredient_name)
                 ingredient_amount_decimal = Decimal(ingredient_amount)
-                # Update or create Recepto_produktai instance
+
                 recepto_produktai, created = Recepto_produktai.objects.get_or_create(
                     fk_Receptasid_Receptas=recipe,
                     fk_Produktasid_Produktas=product,
@@ -274,9 +294,11 @@ def edit_recipe(request, recipe_id):
             return JsonResponse({'message': 'Recipe updated successfully!'})
 
         except Exception as e:
+            logger.error(f"Error updating recipe: {e}", exc_info=True)
             return JsonResponse({'error': str(e)}, status=500)
 
     return render(request, 'edit_recipe.html', {'products': products, 'product_names': product_names, 'recipe': recipe})
+
 
 @login_required
 def manoreceptai_list(request):
@@ -600,6 +622,23 @@ def copyValgiarastis(request):
             )
 
     return valgymai_list(request)
+
+def edit_valgomasReceptas(request):
+    id = request.GET.get('id')
+    amount = request.GET.get('amount')
+    valgomas_receptas = get_object_or_404(Valgymo_receptas, id=id)
+    valgomas_receptas.kiekis = amount
+    valgomas_receptas.save()
+    return valgymai_list(request)
+
+def edit_valgomasProduktas(request):
+    id = request.GET.get('id')
+    amount = request.GET.get('amount')
+    valgomas_produktas = get_object_or_404(Valgomas_produktas, id=id)
+    valgomas_produktas.kiekis = amount
+    valgomas_produktas.save()
+    return valgymai_list(request)
+
 
 from datetime import datetime
 from django.shortcuts import render
