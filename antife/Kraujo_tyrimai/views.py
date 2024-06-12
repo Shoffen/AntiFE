@@ -15,14 +15,20 @@ def create_kraujo_tyrimas(request):
         data = request.POST.get('data')
         fenilalaninas = request.POST.get('fenilalaninas')
         selected_year = request.POST.get('selected_year')  # Retrieve selected year
-
-        print(selected_year)
-      # Check if selected_year is 'None' as a string
         
+       
+      # Check if selected_year is 'None' as a string
+        if selected_year == 'None':
+            try:
+                print("OOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
+                data_obj = datetime.strptime(data, '%Y-%m-%d').date()
+                selected_year = data_obj.year
+            except ValueError:
+                messages.error(request, 'Neteisingas datos formatas.')
         if not data or not fenilalaninas:
             messages.error(request, 'Užpildykite formą')
             return redirect('kraujo_tyrimai:kraujotyrview', selected_year)  # Pass selected year
-        
+        print(selected_year)
         # Fetch the corresponding Naudotojai instance
         naudotojai_instance = Naudotojai.objects.get(user=request.user)
         
