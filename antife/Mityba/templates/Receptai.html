@@ -8,8 +8,9 @@
 <body>
     <div class="container">
         <h2>Receptai</h2>
-
-        <a href="{% url 'mityba:create_recipe' %}" class="btn btn-primary custom-button">Sukurti naują receptą</a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'mityba:create_recipe' %}" class="btn btn-primary custom-button">Sukurti naują receptą</a>
+        {% endif %}
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
         
 
@@ -30,7 +31,9 @@
                         <td>{{ receptas.kalorijos }}</td>
                         <td>{{ receptas.fenilalaninas }}</td>
                         <td>{{ receptas.baltymai }}</td>
-                        <td><button class="favorite-recipe-btn" data-recipe-id="{{ receptas.id }}"><i class="fa fa-star{% if receptas.id in user_favorite_ids %} fa-star-blue{% endif %}"></i></button></td>
+                        {% if user.is_authenticated %}
+                            <td><button class="favorite-recipe-btn" data-recipe-id="{{ receptas.id }}"><i class="fa fa-star{% if receptas.id in user_favorite_ids %} fa-star-blue{% endif %}"></i></button></td>
+                        {% endif %}
                     </tr>
                     <tr>
                         <td colspan="4" id="ingredientai-{{ forloop.counter }}" style="display: none; padding: 10px; background-color: #f2f2f2; border: 1px solid #ddd;">
