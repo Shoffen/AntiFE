@@ -128,7 +128,11 @@ def saveTyrimas(request):
         
         clicked_date = getData(selected_data)
         print(clicked_date)
-        kraujotyrimas_obj = Kraujo_tyrimai.objects.get(data=clicked_date)
+        naudotojai_instance = Naudotojai.objects.get(user=request.user)
+        kraujotyrimas_obj = Kraujo_tyrimai.objects.get(
+        data=clicked_date,
+        fk_Naudotojasid_Naudotojas=naudotojai_instance
+    )
         
         data_obj = datetime.strptime(edited_date, '%Y-%m-%d').date()
         today = datetime.now().date()
