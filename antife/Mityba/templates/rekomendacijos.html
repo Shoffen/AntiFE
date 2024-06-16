@@ -66,13 +66,19 @@
         
         {% for sheet_name, data in data_dict.items %}
         <div class="mb-3">
-            <button class="btn btn-primary" onclick="toggleTable('{{ sheet_name }}')">Rekomendacijos - {{ sheet_name }}</button>
+            <button class="btn btn-primary" onclick="toggleTable('{{ sheet_name }}')">
+                {% if sheet_name == 'Individualios_rek' %}
+                    Individualios rekomendacijos
+                {% else %}
+                    Bendruomenės populiariausi - {{ sheet_name }}
+                {% endif %}
+            </button>
             <table id="dataTable_{{ sheet_name }}" class="table table-striped table-bordered" {% if forloop.last %}style="display: table;"{% else %}style="display: none;"{% endif %}>
                 <thead class="thead-dark">
                     <tr>
                         {% if sheet_name == 'Individualios_rek' %}
-                        <th scope="col">Category</th>
-                        <th scope="col">Recommendation</th>
+                        <th scope="col">Pavadinimas</th>
+                        <th scope="col">Kiekis</th>
                         {% else %}
                         <th scope="col">Pavadinimas</th>
                         <th scope="col">Kiekis</th>
